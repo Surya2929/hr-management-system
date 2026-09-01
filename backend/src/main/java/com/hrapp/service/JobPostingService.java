@@ -19,39 +19,31 @@ public class JobPostingService {
     private final JobPostingRepository jobPostingRepository;
     private final UserRepository userRepository;
 
-    // ── Public: list all OPEN jobs ────────────────────────
     public List<JobPosting> getOpenJobs() {
         return jobPostingRepository.findByStatusOrderByCreatedAtDesc(JobStatus.OPEN);
     }
 
-    // ── HR: list all jobs (OPEN + CLOSED) ────────────────
     public List<JobPosting> getAllJobs() {
         return jobPostingRepository.findAllByOrderByCreatedAtDesc();
     }
 
-    // ── Get by ID (used by candidate apply form to pre-fill job title) ──
     public JobPosting getJobById(Long id) {
         return jobPostingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job posting not found: " + id));
     }
 
-    // ── HR: create a new job posting ─────────────────────
     @Transactional
     public JobPosting createJob(Map<String, Object> body, Long hrUserId) {
         User hrUser = userRepository.findById(hrUserId)
                 .orElseThrow(() -> new RuntimeException("HR user not found"));
 
         JobPosting job = JobPosting.builder()
-                .title(getRequired(body, "title"))
-                .description(body.containsKey("description")
-                        ? body.get("description").toString() : null)
-                .requiredSkills(body.containsKey("requiredSkills")
-                        ? body.get("requiredSkills").toString() : null)
-                .location(body.containsKey("location")
-                        ? body.get("location").toString() : null)
-                .employmentType(body.containsKey("employmentType")
-                        ? JobPosting.EmploymentType.valueOf(
-                                body.get("employmentType").toString().toUpperCase())
+                .title(body.get("title").toString())
+                .description(body.containsKey("description") && body.get("description") != null ? body.get("description").toString() : null)
+                .requiredSkills(body.containsKey("requiredSkills") && body.get("requiredSkills") != null ? body.get("requiredSkills").toString() : null)
+                .location(body.containsKey("location") && body.get("location") != null ? body.get("location").toString() : null)
+                .employmentType(body.containsKey("employmentType") && body.get("employmentType") != null
+                        ? JobPosting.EmploymentType.valueOf(body.get("employmentType").toString().toUpperCase())
                         : JobPosting.EmploymentType.FULL_TIME)
                 .status(JobStatus.OPEN)
                 .createdBy(hrUser)
@@ -60,35 +52,31 @@ public class JobPostingService {
         return jobPostingRepository.save(job);
     }
 
-    // ── HR: update a job posting ──────────────────────────
     @Transactional
     public JobPosting updateJob(Long id, Map<String, Object> body) {
         JobPosting job = getJobById(id);
 
-        if (body.containsKey("title"))
+        if (body.containsKey("title") && body.get("title") != null)
             job.setTitle(body.get("title").toString());
 
         if (body.containsKey("description"))
-            job.setDescription(body.get("description").toString());
+            job.setDescription(body.get("description") != null ? body.get("description").toString() : null);
 
         if (body.containsKey("requiredSkills"))
-            job.setRequiredSkills(body.get("requiredSkills").toString());
+            job.setRequiredSkills(body.get("requiredSkills") != null ? body.get("requiredSkills").toString() : null);
 
         if (body.containsKey("location"))
-            job.setLocation(body.get("location").toString());
+            job.setLocation(body.get("location") != null ? body.get("location").toString() : null);
 
-        if (body.containsKey("employmentType"))
-            job.setEmploymentType(JobPosting.EmploymentType.valueOf(
-                    body.get("employmentType").toString().toUpperCase()));
+        if (body.containsKey("employmentType") && body.get("employmentType") != null)
+            job.setEmploymentType(JobPosting.EmploymentType.valueOf(body.get("employmentType").toString().toUpperCase()));
 
-        if (body.containsKey("status"))
-            job.setStatus(JobStatus.valueOf(
-                    body.get("status").toString().toUpperCase()));
+        if (body.containsKey("status") && body.get("status") != null)
+            job.setStatus(JobStatus.valueOf(body.get("status").toString().toUpperCase()));
 
         return jobPostingRepository.save(job);
     }
 
-    // ── HR: close a job posting ───────────────────────────
     @Transactional
     public JobPosting closeJob(Long id) {
         JobPosting job = getJobById(id);
@@ -96,7 +84,6 @@ public class JobPostingService {
         return jobPostingRepository.save(job);
     }
 
-    // ── HR: reopen a closed job posting ──────────────────
     @Transactional
     public JobPosting reopenJob(Long id) {
         JobPosting job = getJobById(id);
@@ -104,18 +91,9 @@ public class JobPostingService {
         return jobPostingRepository.save(job);
     }
 
-    // ── HR: delete a job posting ──────────────────────────
     @Transactional
     public void deleteJob(Long id) {
-        getJobById(id); // throws if not found
+        getJobById(id);
         jobPostingRepository.deleteById(id);
-    }
-
-    // ── Helper ────────────────────────────────────────────
-    private String getRequired(Map<String, Object> body, String key) {
-        if (!body.containsKey(key) || body.get(key) == null) {
-            throw new RuntimeException("Missing required field: " + key);
-        }
-        return body.get(key).toString();
     }
 }

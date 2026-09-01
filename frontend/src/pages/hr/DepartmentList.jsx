@@ -48,7 +48,6 @@ export default function DepartmentList() {
       <h2 className="text-2xl font-bold text-slate-800 mb-6">Departments</h2>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Form */}
         <div className="card">
           <h3 className="font-semibold text-slate-700 mb-4">
             {editing ? 'Edit Department' : 'Add Department'}
@@ -78,7 +77,6 @@ export default function DepartmentList() {
           </form>
         </div>
 
-        {/* List */}
         <div className="card">
           <h3 className="font-semibold text-slate-700 mb-4">All Departments</h3>
           {loading ? <p className="text-slate-400">Loading…</p> : (

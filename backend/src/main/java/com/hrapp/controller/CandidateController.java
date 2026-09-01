@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/candidates")
@@ -20,32 +21,13 @@ public class CandidateController {
 
     private final CandidateService candidateService;
 
-    // ════════════════════════════════════════════════════
-    //  PUBLIC ENDPOINT — no token required
-    // ════════════════════════════════════════════════════
-
     /**
-     * POST /api/candidates/apply
-     * Public — candidates submit their application with resume PDF.
-     * Uses multipart/form-data (NOT JSON) because of file upload.
-     *
-     * Form fields:
-     *   jobPostingId  (Long)         — ID of the job being applied for
-     *   fullName      (String)       — candidate's full name
-     *   email         (String)       — candidate's email
-     *   phone         (String)       — optional phone number
-     *   resume        (MultipartFile) — PDF resume file
-     *
-     * Example curl:
-     *   curl -X POST http://localhost:8080/api/candidates/apply \
-     *     -F "jobPostingId=1" \
-     *     -F "fullName=John Doe" \
-     *     -F "email=john@example.com" \
-     *     -F "phone=9876543210" \
-     *     -F "resume=@/path/to/resume.pdf"
+     * POST /api/candidates/add
+     * HR only — upload a candidate's resume and details directly from HR portal
      */
-    @PostMapping(value = "/apply", consumes = "multipart/form-data")
-    public ResponseEntity<Candidate> applyForJob(
+    @PostMapping(value = "/add", consumes = "multipart/form-data")
+    @PreAuthorize("hasRole('HR')")
+    public ResponseEntity<Candidate> addCandidate(
             @RequestParam("jobPostingId") Long jobPostingId,
             @RequestParam("fullName")     String fullName,
             @RequestParam("email")        String email,
@@ -57,16 +39,9 @@ public class CandidateController {
         return ResponseEntity.status(HttpStatus.CREATED).body(candidate);
     }
 
-    // ════════════════════════════════════════════════════
-    //  HR ENDPOINTS
-    // ════════════════════════════════════════════════════
-
     /**
      * GET /api/candidates/job/{jobPostingId}
-     * HR only — all candidates for a specific job, sorted by AI score descending.
-     * Unscreened candidates (aiScore = null) appear at the bottom.
-     *
-     * Optional query param: ?status=SHORTLISTED|REJECTED|HIRED|APPLIED
+     * HR only — all candidates for a specific job sorted by AI score
      */
     @GetMapping("/job/{jobPostingId}")
     @PreAuthorize("hasRole('HR')")
@@ -86,8 +61,7 @@ public class CandidateController {
 
     /**
      * GET /api/candidates/ranked
-     * HR only — all candidates across all jobs, sorted by AI score globally.
-     * Useful for the HR dashboard overview.
+     * HR only — all candidates globally sorted by AI score
      */
     @GetMapping("/ranked")
     @PreAuthorize("hasRole('HR')")
@@ -97,8 +71,6 @@ public class CandidateController {
 
     /**
      * GET /api/candidates/{id}
-     * HR only — single candidate detail view
-     * (shows resumeText, AI score, matching/missing skills, interview questions)
      */
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('HR')")
@@ -108,16 +80,12 @@ public class CandidateController {
 
     /**
      * PUT /api/candidates/{id}/status
-     * HR only — update candidate status
-     *
-     * Body:
-     * { "status": "SHORTLISTED" }   // APPLIED | SHORTLISTED | REJECTED | HIRED
      */
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('HR')")
     public ResponseEntity<Candidate> updateStatus(
             @PathVariable Long id,
-            @RequestBody java.util.Map<String, String> body) {
+            @RequestBody Map<String, String> body) {
         String status = body.get("status");
         if (status == null) {
             throw new RuntimeException("Missing required field: status");
@@ -127,12 +95,11 @@ public class CandidateController {
 
     /**
      * DELETE /api/candidates/{id}
-     * HR only — remove a candidate application
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('HR')")
     public ResponseEntity<String> deleteCandidate(@PathVariable Long id) {
         candidateService.deleteCandidate(id);
-        return ResponseEntity.ok("Candidate application deleted");
+        return ResponseEntity.ok("Candidate record deleted successfully");
     }
 }

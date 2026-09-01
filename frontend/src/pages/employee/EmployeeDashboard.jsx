@@ -28,7 +28,6 @@ export default function EmployeeDashboard() {
       <h2 className="text-2xl font-bold text-slate-800 mb-6">My Dashboard</h2>
 
       <div className="grid lg:grid-cols-3 gap-5">
-        {/* Profile card */}
         <div className="card col-span-1">
           <div className="text-4xl mb-3">👤</div>
           <h3 className="font-bold text-lg text-slate-800">
@@ -40,7 +39,6 @@ export default function EmployeeDashboard() {
           <p className="text-xs text-slate-400 mt-1">Joined: {emp?.dateJoined || '—'}</p>
         </div>
 
-        {/* Today's attendance */}
         <div className="card">
           <h3 className="font-semibold text-slate-700 mb-3">📋 Today's Attendance</h3>
           {today ? (
@@ -63,7 +61,6 @@ export default function EmployeeDashboard() {
           )}
         </div>
 
-        {/* Leave balance */}
         <div className="card">
           <h3 className="font-semibold text-slate-700 mb-3">📅 Leave Balance {balance?.year}</h3>
           {balance ? (
@@ -80,7 +77,6 @@ export default function EmployeeDashboard() {
                 <span className="font-medium">Remaining</span>
                 <span className="font-bold text-emerald-600">{balance.daysRemaining} days</span>
               </div>
-              {/* Progress bar */}
               <div className="mt-2 h-2 bg-slate-200 rounded-full overflow-hidden">
                 <div
                   className="h-2 bg-indigo-500 rounded-full transition-all"

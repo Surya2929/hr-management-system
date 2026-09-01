@@ -13,18 +13,15 @@ public class DepartmentService {
 
     private final DepartmentRepository departmentRepository;
 
-    // ── Get all departments ───────────────────────────────
     public List<Department> getAllDepartments() {
         return departmentRepository.findAll();
     }
 
-    // ── Get by ID ─────────────────────────────────────────
     public Department getDepartmentById(Long id) {
         return departmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Department not found with id: " + id));
     }
 
-    // ── Create department ─────────────────────────────────
     public Department createDepartment(Department department) {
         if (departmentRepository.existsByName(department.getName())) {
             throw new RuntimeException("Department already exists: " + department.getName());
@@ -32,7 +29,6 @@ public class DepartmentService {
         return departmentRepository.save(department);
     }
 
-    // ── Update department ─────────────────────────────────
     public Department updateDepartment(Long id, Department updated) {
         Department existing = getDepartmentById(id);
         existing.setName(updated.getName());
@@ -40,9 +36,8 @@ public class DepartmentService {
         return departmentRepository.save(existing);
     }
 
-    // ── Delete department ─────────────────────────────────
     public void deleteDepartment(Long id) {
-        getDepartmentById(id); // throws if not found
+        getDepartmentById(id);
         departmentRepository.deleteById(id);
     }
 }

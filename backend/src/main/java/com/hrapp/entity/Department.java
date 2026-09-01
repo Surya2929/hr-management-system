@@ -1,36 +1,24 @@
 package com.hrapp.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "departments")
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity @Table(name="departments")
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class Department {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable=false, unique=true, length=100)
     private String name;
 
-    @Column(length = 255)
+    @Column(length=255)
     private String description;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(name="created_at", updatable=false)
     private LocalDateTime createdAt;
 
     @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
+    protected void onCreate() { this.createdAt = LocalDateTime.now(); }
 }

@@ -10,5 +10,5 @@ public class RegisterRequest {
     private String lastName;
     private String phone;
     private String designation;
-    private Long departmentId;     // optional at registration time
+    private Long departmentId;
 }

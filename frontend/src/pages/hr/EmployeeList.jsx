@@ -5,7 +5,6 @@ import axiosInstance from '../../api/axiosInstance';
 export default function EmployeeList() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading]     = useState(true);
-  const [search, setSearch]       = useState('');
 
   const fetchEmployees = () => {
     setLoading(true);
@@ -27,11 +26,6 @@ export default function EmployeeList() {
     }
   };
 
-  const filtered = employees.filter(e =>
-    `${e.firstName} ${e.lastName} ${e.designation} ${e.department?.name || ''}`
-      .toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -40,13 +34,6 @@ export default function EmployeeList() {
       </div>
 
       <div className="card">
-        <input
-          className="input mb-4 max-w-sm"
-          placeholder="Search by name, designation, department…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-
         {loading ? <p className="text-slate-500">Loading…</p> : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -60,9 +47,9 @@ export default function EmployeeList() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filtered.length === 0 ? (
+                {employees.length === 0 ? (
                   <tr><td colSpan={5} className="py-8 text-center text-slate-400">No employees found</td></tr>
-                ) : filtered.map(emp => (
+                ) : employees.map(emp => (
                   <tr key={emp.id} className="hover:bg-slate-50">
                     <td className="py-3 pr-4 font-medium">{emp.firstName} {emp.lastName}</td>
                     <td className="py-3 pr-4 text-slate-500">{emp.user?.email}</td>

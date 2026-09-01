@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 
 export default function EmployeeForm() {
-  const { id }   = useParams();         // present = edit mode
+  const { id }   = useParams();
   const isEdit   = Boolean(id);
   const navigate = useNavigate();
 

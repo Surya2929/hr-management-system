@@ -19,28 +19,17 @@ public class InterviewQuestionService {
 
     private static final int MAX_RESUME_CHARS = 4000;
 
-    /**
-     * Generate 5 personalised interview questions for a candidate
-     * based on their resume and the job role they applied for.
-     *
-     * @param candidateId  ID of the candidate
-     * @return             updated Candidate with interviewQuestions populated
-     */
     @Transactional
     public Candidate generateQuestions(Long candidateId) {
         Candidate candidate = candidateService.getCandidateById(candidateId);
 
         if (candidate.getResumeText() == null || candidate.getResumeText().isBlank()) {
-            throw new RuntimeException(
-                    "Resume text is empty for candidate #" + candidateId +
-                    ". Cannot generate interview questions.");
+            throw new RuntimeException("Resume text is empty for candidate #" + candidateId + ". Cannot generate interview questions.");
         }
 
-        String jobTitle    = candidate.getJobPosting().getTitle();
-        String resumeText  = PdfTextExtractor.truncate(
-                candidate.getResumeText(), MAX_RESUME_CHARS);
+        String jobTitle   = candidate.getJobPosting().getTitle();
+        String resumeText = PdfTextExtractor.truncate(candidate.getResumeText(), MAX_RESUME_CHARS);
 
-        // ── Build prompts ──────────────────────────────────────
         String systemPrompt = """
                 You are an experienced technical interviewer.
                 Your task is to generate personalised interview questions
@@ -75,13 +64,9 @@ public class InterviewQuestionService {
                 resumeText
         );
 
-        // ── Call Groq API ──────────────────────────────────────
         String rawResponse = groqApiService.chat(systemPrompt, userPrompt);
-
-        // ── Parse JSON response ────────────────────────────────
         InterviewQuestionsResponse parsed = parseJsonSafely(rawResponse);
 
-        // ── Persist questions to Candidate row ─────────────────
         try {
             String questionsJson = objectMapper.writeValueAsString(parsed.getQuestions());
             candidate.setInterviewQuestions(questionsJson);
@@ -91,8 +76,6 @@ public class InterviewQuestionService {
 
         return candidateService.save(candidate);
     }
-
-    // ── Helpers ────────────────────────────────────────────────
 
     private InterviewQuestionsResponse parseJsonSafely(String raw) {
         String cleaned = raw.trim();
@@ -104,9 +87,7 @@ public class InterviewQuestionService {
         try {
             return objectMapper.readValue(cleaned, InterviewQuestionsResponse.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(
-                    "Failed to parse Groq JSON response: " + e.getMessage() +
-                    "\nRaw response was: " + raw);
+            throw new RuntimeException("Failed to parse Groq JSON response: " + e.getMessage() + "\nRaw response: " + raw);
         }
     }
 }

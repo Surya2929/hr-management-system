@@ -5,8 +5,8 @@ import com.hrapp.dto.LoginResponse;
 import com.hrapp.dto.RegisterRequest;
 import com.hrapp.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,9 +18,7 @@ public class AuthController {
 
     /**
      * POST /api/auth/login
-     * Public — no token required.
-     * Body: { "email": "...", "password": "..." }
-     * Returns: { "token": "...", "role": "HR|EMPLOYEE", "userId": 1, "email": "..." }
+     * Authenticates HR or EMPLOYEE and returns JWT + role
      */
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
@@ -29,12 +27,10 @@ public class AuthController {
 
     /**
      * POST /api/auth/register
-     * Only HR can register new employees.
-     * Body: RegisterRequest JSON
+     * Public self-registration for EMPLOYEE accounts ONLY
      */
     @PostMapping("/register")
-    @PreAuthorize("hasRole('HR')")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.registerEmployee(request));
+    public ResponseEntity<LoginResponse> registerEmployee(@RequestBody RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerEmployee(request));
     }
 }

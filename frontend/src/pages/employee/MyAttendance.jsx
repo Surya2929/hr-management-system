@@ -42,7 +42,6 @@ export default function MyAttendance() {
       <h2 className="text-2xl font-bold text-slate-800 mb-6">My Attendance</h2>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Mark attendance form */}
         <div className="card">
           <h3 className="font-semibold text-slate-700 mb-4">Mark Today's Attendance</h3>
           <form onSubmit={handleMark} className="space-y-3">
@@ -79,7 +78,6 @@ export default function MyAttendance() {
           </form>
         </div>
 
-        {/* History */}
         <div className="card">
           <h3 className="font-semibold text-slate-700 mb-4">Attendance History</h3>
           {loading ? <p className="text-slate-400">Loading…</p> : (

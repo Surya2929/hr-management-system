@@ -11,8 +11,9 @@ export default function JobPostingForm() {
     title: '', description: '', requiredSkills: '',
     location: '', employmentType: 'FULL_TIME',
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
+  const [loading, setLoading]     = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [error, setError]         = useState('');
 
   useEffect(() => {
     if (isEdit) {
@@ -30,6 +31,26 @@ export default function JobPostingForm() {
   }, [id]);
 
   const set = (f) => (e) => setForm(prev => ({ ...prev, [f]: e.target.value }));
+
+  const handleGenerateWithAI = async () => {
+    if (!form.title) {
+      setError('Please enter a job title first.');
+      return;
+    }
+    setError('');
+    setAiLoading(true);
+    try {
+      const res = await axiosInstance.post('/ai/generate-description', {
+        title: form.title,
+        skills: form.requiredSkills,
+      });
+      setForm(prev => ({ ...prev, description: res.data.description }));
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to generate description. Please try again.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,11 +81,7 @@ export default function JobPostingForm() {
             <label className="label" htmlFor="jobTitle">Job Title *</label>
             <input id="jobTitle" className="input" value={form.title} onChange={set('title')} required />
           </div>
-          <div>
-            <label className="label" htmlFor="jobDesc">Description</label>
-            <textarea id="jobDesc" rows={4} className="input resize-none"
-              value={form.description} onChange={set('description')} />
-          </div>
+
           <div>
             <label className="label" htmlFor="skills">Required Skills</label>
             <input id="skills" className="input" placeholder="Java, Spring Boot, MySQL…"
@@ -73,6 +90,24 @@ export default function JobPostingForm() {
               Comma-separated. The AI screener uses this to score candidates.
             </p>
           </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="label mb-0" htmlFor="jobDesc">Description</label>
+              <button
+                type="button"
+                onClick={handleGenerateWithAI}
+                disabled={aiLoading}
+                className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {aiLoading ? '✨ Generating…' : '✨ Generate with AI'}
+              </button>
+            </div>
+            <textarea id="jobDesc" rows={6} className="input resize-none"
+              value={form.description} onChange={set('description')}
+              placeholder="Enter a job title and skills above, then click 'Generate with AI', or write your own description here." />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label" htmlFor="location">Location</label>
