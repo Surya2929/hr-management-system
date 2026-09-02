@@ -22,48 +22,60 @@ public class DataInitializer {
     public CommandLineRunner initDatabase() {
         return args -> {
 
-            // 1. Seed initial departments if none exist
+            // 1. Seed departments if none exist
             if (departmentRepository.count() == 0) {
 
-                departmentRepository.save(Department.builder()
-                        .name("Engineering")
-                        .description("Software Development and IT Operations")
-                        .build());
+                departmentRepository.save(
+                        Department.builder()
+                                .name("Engineering")
+                                .description("Software Development and IT Operations")
+                                .build()
+                );
 
-                departmentRepository.save(Department.builder()
-                        .name("Human Resources")
-                        .description("People Ops & Talent Acquisition")
-                        .build());
+                departmentRepository.save(
+                        Department.builder()
+                                .name("Human Resources")
+                                .description("People Ops & Talent Acquisition")
+                                .build()
+                );
 
-                departmentRepository.save(Department.builder()
-                        .name("Marketing")
-                        .description("Marketing and Communications")
-                        .build());
+                departmentRepository.save(
+                        Department.builder()
+                                .name("Marketing")
+                                .description("Marketing and Communications")
+                                .build()
+                );
 
-                departmentRepository.save(Department.builder()
-                        .name("Finance")
-                        .description("Accounting and Financial Planning")
-                        .build());
-            }
-
-            // 2. Seed fixed HR account
-            String hrEmail = "hr@company.com";
-
-            if (!userRepository.existsByEmail(hrEmail)) {
-
-                User hrUser = User.builder()
-                        .email(hrEmail)
-                        .password(passwordEncoder.encode("Hr@Secure123"))
-                        .role(User.Role.HR)
-                        .isActive(true)
-                        .build();
-
-                userRepository.save(hrUser);
-
-                System.out.println(
-                        ">>> SEEDED FIXED HR ACCOUNT: hr@company.com <<<"
+                departmentRepository.save(
+                        Department.builder()
+                                .name("Finance")
+                                .description("Accounting and Financial Planning")
+                                .build()
                 );
             }
+
+            // 2. Create or reset fixed HR account
+            String hrEmail = "hr@company.com";
+
+            User hrUser = userRepository.findByEmail(hrEmail)
+                    .orElse(
+                            User.builder()
+                                    .email(hrEmail)
+                                    .role(User.Role.HR)
+                                    .isActive(true)
+                                    .build()
+                    );
+
+            hrUser.setPassword(
+                    passwordEncoder.encode("Hr@Secure123")
+            );
+
+            hrUser.setRole(User.Role.HR);
+            hrUser.setIsActive(true);
+
+            userRepository.save(hrUser);
+
+            System.out.println(">>> HR ACCOUNT READY <<<");
         };
     }
 }
