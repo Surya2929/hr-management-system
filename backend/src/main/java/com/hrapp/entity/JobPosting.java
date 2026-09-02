@@ -24,6 +24,9 @@ public class JobPosting {
     @Column(length=100)
     private String location;
 
+    @Column(length=100)
+    private String salary;
+
     @Enumerated(EnumType.STRING)
     @Column(name="employment_type")
     @Builder.Default

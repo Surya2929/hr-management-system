@@ -26,8 +26,18 @@ public class JobPostingController {
         return ResponseEntity.ok(jobPostingService.getAllJobs());
     }
 
+    /**
+     * GET /api/jobs/open
+     * HR + EMPLOYEE — open positions only, so employees can view and refer candidates
+     */
+    @GetMapping("/open")
+    @PreAuthorize("hasAnyRole('HR','EMPLOYEE')")
+    public ResponseEntity<List<JobPosting>> getOpenJobs() {
+        return ResponseEntity.ok(jobPostingService.getOpenJobs());
+    }
+
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('HR')")
+    @PreAuthorize("hasAnyRole('HR','EMPLOYEE')")
     public ResponseEntity<JobPosting> getJobById(@PathVariable Long id) {
         return ResponseEntity.ok(jobPostingService.getJobById(id));
     }

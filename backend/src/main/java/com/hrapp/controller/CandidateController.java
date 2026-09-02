@@ -2,11 +2,13 @@ package com.hrapp.controller;
 
 import com.hrapp.entity.Candidate;
 import com.hrapp.entity.Candidate.CandidateStatus;
+import com.hrapp.entity.User;
 import com.hrapp.service.CandidateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,6 +38,25 @@ public class CandidateController {
 
         Candidate candidate = candidateService.applyForJob(
                 jobPostingId, fullName, email, phone, resume);
+        return ResponseEntity.status(HttpStatus.CREATED).body(candidate);
+    }
+
+    /**
+     * POST /api/candidates/refer
+     * EMPLOYEE only — refer someone for an open position from the Employee portal
+     */
+    @PostMapping(value = "/refer", consumes = "multipart/form-data")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<Candidate> referCandidate(
+            @RequestParam("jobPostingId") Long jobPostingId,
+            @RequestParam("fullName")     String fullName,
+            @RequestParam("email")        String email,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam("resume")       MultipartFile resume,
+            @AuthenticationPrincipal User currentUser) throws IOException {
+
+        Candidate candidate = candidateService.referCandidate(
+                jobPostingId, fullName, email, phone, resume, currentUser.getEmail());
         return ResponseEntity.status(HttpStatus.CREATED).body(candidate);
     }
 

@@ -22,6 +22,7 @@ import EmpLayout         from './pages/employee/EmpLayout';
 import EmployeeDashboard from './pages/employee/EmployeeDashboard';
 import MyAttendance      from './pages/employee/MyAttendance';
 import LeaveRequest      from './pages/employee/LeaveRequest';
+import OpenPositions     from './pages/employee/OpenPositions';
 
 export default function App() {
   return (
@@ -76,6 +77,7 @@ export default function App() {
             <Route path="dashboard"  element={<EmployeeDashboard />} />
             <Route path="attendance" element={<MyAttendance />} />
             <Route path="leave"      element={<LeaveRequest />} />
+            <Route path="jobs"       element={<OpenPositions />} />
           </Route>
 
           {/* Catch-all Route */}

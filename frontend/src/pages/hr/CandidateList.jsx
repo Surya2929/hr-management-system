@@ -200,6 +200,11 @@ export default function CandidateList() {
                         ★ AI Match: {c.aiScore}/100
                       </span>
                     )}
+                    {c.referredByEmployee && (
+                      <span className="text-xs px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-medium">
+                        👋 Referred by {c.referredByEmployee}
+                      </span>
+                    )}
                   </div>
 
                   <p className="text-xs text-slate-500">

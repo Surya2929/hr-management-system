@@ -36,6 +36,29 @@ public class CandidateService {
                                   String email,
                                   String phone,
                                   MultipartFile resumeFile) throws IOException {
+        return saveCandidate(jobPostingId, fullName, email, phone, resumeFile, null);
+    }
+
+    /**
+     * Used when an EMPLOYEE refers a candidate from the Open Positions page.
+     * referredByEmail identifies which employee made the referral.
+     */
+    @Transactional
+    public Candidate referCandidate(Long jobPostingId,
+                                     String fullName,
+                                     String email,
+                                     String phone,
+                                     MultipartFile resumeFile,
+                                     String referredByEmail) throws IOException {
+        return saveCandidate(jobPostingId, fullName, email, phone, resumeFile, referredByEmail);
+    }
+
+    private Candidate saveCandidate(Long jobPostingId,
+                                     String fullName,
+                                     String email,
+                                     String phone,
+                                     MultipartFile resumeFile,
+                                     String referredByEmail) throws IOException {
 
         JobPosting job = jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new RuntimeException("Job posting not found: " + jobPostingId));
@@ -57,6 +80,7 @@ public class CandidateService {
                 .resumeFilePath(savedFilePath)
                 .resumeText(resumeText)
                 .status(CandidateStatus.APPLIED)
+                .referredByEmployee(referredByEmail)
                 .build();
 
         return candidateRepository.save(candidate);

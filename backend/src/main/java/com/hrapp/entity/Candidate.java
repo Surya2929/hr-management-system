@@ -56,6 +56,10 @@ public class Candidate {
     @Column(name="applied_at", updatable=false)
     private LocalDateTime appliedAt;
 
+    // Set only when an employee refers this candidate (vs HR adding directly)
+    @Column(name="referred_by_employee", length=200)
+    private String referredByEmployee;
+
     @PrePersist protected void onCreate() { appliedAt = LocalDateTime.now(); }
 
     public enum CandidateStatus { APPLIED, SHORTLISTED, REJECTED, HIRED }

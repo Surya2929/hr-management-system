@@ -9,7 +9,7 @@ export default function JobPostingForm() {
 
   const [form, setForm] = useState({
     title: '', description: '', requiredSkills: '',
-    location: '', employmentType: 'FULL_TIME',
+    location: '', salary: '', employmentType: 'FULL_TIME',
   });
   const [loading, setLoading]     = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
@@ -24,6 +24,7 @@ export default function JobPostingForm() {
           description:    j.description || '',
           requiredSkills: j.requiredSkills || '',
           location:       j.location || '',
+          salary:         j.salary || '',
           employmentType: j.employmentType || 'FULL_TIME',
         });
       });
@@ -115,14 +116,20 @@ export default function JobPostingForm() {
                 value={form.location} onChange={set('location')} />
             </div>
             <div>
-              <label className="label" htmlFor="empType">Employment Type</label>
-              <select id="empType" className="input" value={form.employmentType} onChange={set('employmentType')}>
-                <option value="FULL_TIME">Full Time</option>
-                <option value="PART_TIME">Part Time</option>
-                <option value="CONTRACT">Contract</option>
-                <option value="INTERNSHIP">Internship</option>
-              </select>
+              <label className="label" htmlFor="salary">Salary</label>
+              <input id="salary" className="input" placeholder="₹6-9 LPA"
+                value={form.salary} onChange={set('salary')} />
             </div>
+          </div>
+
+          <div>
+            <label className="label" htmlFor="empType">Employment Type</label>
+            <select id="empType" className="input" value={form.employmentType} onChange={set('employmentType')}>
+              <option value="FULL_TIME">Full Time</option>
+              <option value="PART_TIME">Part Time</option>
+              <option value="CONTRACT">Contract</option>
+              <option value="INTERNSHIP">Internship</option>
+            </select>
           </div>
 
           {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded">{error}</p>}

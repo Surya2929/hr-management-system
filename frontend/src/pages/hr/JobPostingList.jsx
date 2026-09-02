@@ -51,7 +51,10 @@ export default function JobPostingList() {
                   </span>
                   <span className="text-xs text-slate-400">{job.employmentType}</span>
                 </div>
-                <p className="text-sm text-slate-500 mb-2">{job.location || 'Location not specified'}</p>
+                <p className="text-sm text-slate-500 mb-1">{job.location || 'Location not specified'}</p>
+                {job.salary && (
+                  <p className="text-sm text-emerald-700 font-medium mb-2">💰 {job.salary}</p>
+                )}
                 {job.requiredSkills && (
                   <p className="text-xs text-slate-400">Skills: {job.requiredSkills}</p>
                 )}

@@ -42,6 +42,7 @@ public class JobPostingService {
                 .description(body.containsKey("description") && body.get("description") != null ? body.get("description").toString() : null)
                 .requiredSkills(body.containsKey("requiredSkills") && body.get("requiredSkills") != null ? body.get("requiredSkills").toString() : null)
                 .location(body.containsKey("location") && body.get("location") != null ? body.get("location").toString() : null)
+                .salary(body.containsKey("salary") && body.get("salary") != null ? body.get("salary").toString() : null)
                 .employmentType(body.containsKey("employmentType") && body.get("employmentType") != null
                         ? JobPosting.EmploymentType.valueOf(body.get("employmentType").toString().toUpperCase())
                         : JobPosting.EmploymentType.FULL_TIME)
@@ -67,6 +68,9 @@ public class JobPostingService {
 
         if (body.containsKey("location"))
             job.setLocation(body.get("location") != null ? body.get("location").toString() : null);
+
+        if (body.containsKey("salary"))
+            job.setSalary(body.get("salary") != null ? body.get("salary").toString() : null);
 
         if (body.containsKey("employmentType") && body.get("employmentType") != null)
             job.setEmploymentType(JobPosting.EmploymentType.valueOf(body.get("employmentType").toString().toUpperCase()));

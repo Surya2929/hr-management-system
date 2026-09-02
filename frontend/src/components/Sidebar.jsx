@@ -15,6 +15,7 @@ const employeeLinks = [
   { to: '/emp/dashboard',   label: '🏠 Dashboard' },
   { to: '/emp/attendance',  label: '📋 My Attendance' },
   { to: '/emp/leave',       label: '📅 My Leaves' },
+  { to: '/emp/jobs',        label: '💼 Open Positions' },
 ];
 
 export default function Sidebar() {

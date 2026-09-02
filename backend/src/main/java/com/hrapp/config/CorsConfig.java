@@ -15,15 +15,24 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         var config = new CorsConfiguration();
 
-        // Temporary deployment-friendly setting. After the frontend gets its final
-        // Vercel domain, replace "*" with localhost + that exact production domain.
-        config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "https://hr-management-system-ochre-mu.vercel.app"
+        ));
+
+        config.setAllowedMethods(
+                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        );
+
+        config.setAllowedHeaders(
+                List.of("Authorization", "Content-Type", "Accept")
+        );
+
         config.setAllowCredentials(true);
 
         var source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", config);
+
         return new CorsFilter(source);
     }
 }
