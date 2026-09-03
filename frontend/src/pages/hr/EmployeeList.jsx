@@ -28,9 +28,9 @@ export default function EmployeeList() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h2 className="text-2xl font-bold text-slate-800">Employees</h2>
-        <Link to="/hr/employees/new" className="btn-primary text-sm">+ Add Employee</Link>
+        <Link to="/hr/employees/new" className="btn-primary text-sm text-center w-full sm:w-auto">+ Add Employee</Link>
       </div>
 
       <div className="card">

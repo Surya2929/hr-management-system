@@ -3,10 +3,12 @@ import Sidebar from '../../components/Sidebar';
 
 export default function EmpLayout() {
   return (
-    <div className="flex min-h-screen">
+    <div className="min-h-screen bg-slate-100 md:flex overflow-x-hidden">
       <Sidebar />
-      <main className="flex-1 p-6 overflow-auto">
-        <Outlet />
+      <main className="w-full min-w-0 flex-1 pt-20 md:pt-0 p-4 sm:p-5 md:p-6 lg:p-8 overflow-x-hidden">
+        <div className="w-full max-w-[1600px] mx-auto">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

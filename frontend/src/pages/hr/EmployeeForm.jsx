@@ -93,7 +93,7 @@ export default function EmployeeForm() {
             </>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="First Name" id="firstName" value={form.firstName} onChange={set('firstName')} required />
             <Field label="Last Name"  id="lastName"  value={form.lastName}  onChange={set('lastName')}  required />
           </div>

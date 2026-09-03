@@ -7,6 +7,8 @@ export default function Login() {
   const [isRegister, setIsRegister] = useState(false);
   const [accountType, setAccountType] = useState('EMPLOYEE'); // 'EMPLOYEE' | 'HR'
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [departments, setDepartments] = useState([]);
   
   // Login fields
@@ -93,11 +95,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-      <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[640px] border border-slate-200/80">
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-0 sm:p-6 lg:p-8">
+      <div className="w-full max-w-5xl bg-white sm:rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-screen sm:min-h-[640px] border-0 sm:border border-slate-200/80">
         
         {/* Left Panel: Branding & Highlights (5 cols on large screens) */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-indigo-900 via-indigo-800 to-slate-950 p-8 lg:p-12 text-white flex flex-col justify-between relative overflow-hidden">
+        <div className="lg:col-span-5 bg-gradient-to-br from-indigo-900 via-indigo-800 to-slate-950 p-6 sm:p-8 lg:p-12 text-white flex flex-col justify-between relative overflow-hidden">
           {/* Subtle Background Circles */}
           <div className="absolute -top-24 -left-24 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
           <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -116,7 +118,7 @@ export default function Login() {
           </div>
 
           {/* Center Content */}
-          <div className="relative z-10 my-8 space-y-6">
+          <div className="relative z-10 my-6 sm:my-8 space-y-5 sm:space-y-6">
             <div>
               <h2 className="text-2xl lg:text-3xl font-extrabold leading-tight text-white mb-2">
                 Modern HR & Talent Management
@@ -152,11 +154,11 @@ export default function Login() {
         </div>
 
         {/* Right Panel: Form (7 cols on large screens) */}
-        <div className="lg:col-span-7 p-8 sm:p-10 lg:p-12 flex flex-col justify-center bg-white">
+        <div className="lg:col-span-7 p-5 sm:p-10 lg:p-12 flex flex-col justify-center bg-white">
           <div className="max-w-md w-full mx-auto">
             
             {/* Tab Switcher */}
-            <div className="flex bg-slate-100 p-1.5 rounded-2xl mb-8 border border-slate-200">
+            <div className="grid grid-cols-2 bg-slate-100 p-1.5 rounded-2xl mb-6 sm:mb-8 border border-slate-200">
               <button
                 type="button"
                 onClick={() => { setIsRegister(false); setError(''); setSuccess(''); }}
@@ -236,13 +238,22 @@ export default function Login() {
                     </span>
                     <input
                       id="loginPassword"
-                      type="password"
-                      className="input pl-9"
+                      type={showLoginPassword ? 'text' : 'password'}
+                      className="input pl-9 pr-12"
                       placeholder="••••••••"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
                       required
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowLoginPassword(v => !v)}
+                      className="absolute inset-y-0 right-0 w-11 flex items-center justify-center text-slate-500 hover:text-indigo-600"
+                      aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                      title={showLoginPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showLoginPassword ? '🙈' : '👁️'}
+                    </button>
                   </div>
                 </div>
 
@@ -336,7 +347,7 @@ export default function Login() {
                 ) : (
               /* EMPLOYEE REGISTRATION FORM */
               <form onSubmit={handleRegister} className="space-y-3.5">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="label" htmlFor="regFirstName">First Name *</label>
                     <input
@@ -378,18 +389,29 @@ export default function Login() {
 
                 <div>
                   <label className="label" htmlFor="regPassword">Password *</label>
-                  <input
-                    id="regPassword"
-                    type="password"
-                    className="input"
-                    placeholder="Create a strong password"
-                    value={regForm.password}
-                    onChange={(e) => setRegForm({ ...regForm, password: e.target.value })}
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      id="regPassword"
+                      type={showRegisterPassword ? 'text' : 'password'}
+                      className="input pr-12"
+                      placeholder="Create a strong password"
+                      value={regForm.password}
+                      onChange={(e) => setRegForm({ ...regForm, password: e.target.value })}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowRegisterPassword(v => !v)}
+                      className="absolute inset-y-0 right-0 w-11 flex items-center justify-center text-slate-500 hover:text-indigo-600"
+                      aria-label={showRegisterPassword ? 'Hide password' : 'Show password'}
+                      title={showRegisterPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showRegisterPassword ? '🙈' : '👁️'}
+                    </button>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="label" htmlFor="regPhone">Phone</label>
                     <input

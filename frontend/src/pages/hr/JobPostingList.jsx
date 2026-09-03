@@ -33,18 +33,18 @@ export default function JobPostingList() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h2 className="text-2xl font-bold text-slate-800">Job Postings</h2>
-        <Link to="/hr/jobs/new" className="btn-primary text-sm">+ Post New Job</Link>
+        <Link to="/hr/jobs/new" className="btn-primary text-sm text-center w-full sm:w-auto">+ Post New Job</Link>
       </div>
 
       {loading ? <p className="text-slate-400">Loading…</p> : (
         <div className="space-y-4">
           {jobs.length === 0 && <p className="text-slate-400">No job postings yet.</p>}
           {jobs.map(job => (
-            <div key={job.id} className="card flex items-start justify-between gap-4">
+            <div key={job.id} className="card flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
                   <h3 className="font-semibold text-slate-800">{job.title}</h3>
                   <span className={job.status === 'OPEN' ? 'badge-open' : 'badge-closed'}>
                     {job.status}
@@ -59,7 +59,7 @@ export default function JobPostingList() {
                   <p className="text-xs text-slate-400">Skills: {job.requiredSkills}</p>
                 )}
               </div>
-              <div className="flex flex-col gap-2 min-w-fit">
+              <div className="grid grid-cols-3 sm:flex sm:flex-col gap-2 w-full sm:w-auto sm:min-w-fit">
                 <Link to={`/hr/jobs/${job.id}/edit`} className="text-xs btn-secondary py-1 px-3 text-center">Edit</Link>
                 <button onClick={() => toggleStatus(job)}
                   className={`text-xs py-1 px-3 rounded-lg font-medium transition-colors

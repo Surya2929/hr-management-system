@@ -109,7 +109,7 @@ export default function JobPostingForm() {
               placeholder="Enter a job title and skills above, then click 'Generate with AI', or write your own description here." />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label" htmlFor="location">Location</label>
               <input id="location" className="input" placeholder="Bangalore / Remote"
@@ -134,7 +134,7 @@ export default function JobPostingForm() {
 
           {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded">{error}</p>}
 
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button type="submit" disabled={loading} className="btn-primary">
               {loading ? 'Saving…' : isEdit ? 'Update Job' : 'Post Job'}
             </button>

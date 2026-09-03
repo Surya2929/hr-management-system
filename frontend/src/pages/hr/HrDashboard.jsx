@@ -43,8 +43,8 @@ export default function HrDashboard() {
   ];
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-slate-800 mb-6">HR Dashboard</h2>
+    <div className="w-full min-w-0">
+      <h2 className="text-2xl font-bold text-slate-800 mb-5 sm:mb-6">HR Dashboard</h2>
 
       {loading ? (
         <p className="text-slate-500">Loading…</p>
@@ -53,7 +53,7 @@ export default function HrDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
             {cards.map((c) => (
               <Link key={c.label} to={c.to}
-                className={`card hover:shadow-md transition-shadow ${c.color}`}>
+                className={`card hover:shadow-md transition-shadow min-h-[150px] flex flex-col justify-center ${c.color}`}>
                 <div className="text-3xl mb-2">{c.icon}</div>
                 <div className="text-3xl font-bold">{c.value}</div>
                 <div className="text-sm font-medium mt-1">{c.label}</div>
@@ -66,7 +66,7 @@ export default function HrDashboard() {
             {deptChartData.length === 0 ? (
               <p className="text-sm text-slate-400">No employee data yet.</p>
             ) : (
-              <div style={{ width: '100%', height: 260 }}>
+              <div className="w-full min-w-0 overflow-hidden" style={{ height: 260 }}>
                 <ResponsiveContainer>
                   <BarChart data={deptChartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -84,11 +84,11 @@ export default function HrDashboard() {
 
       <div className="card">
         <h3 className="font-semibold text-slate-700 mb-4">Quick Actions</h3>
-        <div className="flex flex-wrap gap-3">
-          <Link to="/hr/employees/new"  className="btn-primary text-sm">+ Add Employee</Link>
-          <Link to="/hr/jobs/new"       className="btn-primary text-sm">+ Post Job</Link>
-          <Link to="/hr/leave"          className="btn-secondary text-sm">📋 Review Leaves</Link>
-          <Link to="/hr/candidates"     className="btn-secondary text-sm">🤖 View Candidates</Link>
+        <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-3">
+          <Link to="/hr/employees/new"  className="btn-primary text-sm text-center">+ Add Employee</Link>
+          <Link to="/hr/jobs/new"       className="btn-primary text-sm text-center">+ Post Job</Link>
+          <Link to="/hr/leave"          className="btn-secondary text-sm text-center">📋 Review Leaves</Link>
+          <Link to="/hr/candidates"     className="btn-secondary text-sm text-center">🤖 View Candidates</Link>
         </div>
       </div>
     </div>
