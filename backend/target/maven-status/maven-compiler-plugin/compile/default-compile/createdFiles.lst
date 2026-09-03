@@ -8,6 +8,7 @@ com\hrapp\repository\EmployeeRepository.class
 com\hrapp\service\JobDescriptionService.class
 com\hrapp\dto\ResumeScoreResponse.class
 com\hrapp\repository\JobPostingRepository.class
+com\hrapp\service\CandidateParsingService.class
 com\hrapp\entity\Department.class
 com\hrapp\entity\Attendance.class
 com\hrapp\entity\Attendance$AttendanceStatus.class

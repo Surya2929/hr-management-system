@@ -18,8 +18,10 @@ export default function CandidateList() {
     phone: '',
     resume: null,
   });
-  const [uploading, setUploading] = useState(false);
-  const [addError, setAddError]   = useState('');
+  const [uploading, setUploading]   = useState(false);
+  const [addError, setAddError]     = useState('');
+  const [extracting, setExtracting] = useState(false);
+  const [extractNote, setExtractNote] = useState('');
 
   useEffect(() => {
     axiosInstance.get('/jobs').then(r => setJobs(r.data));
@@ -74,6 +76,38 @@ export default function CandidateList() {
     }
   };
 
+  // Fired the moment HR picks a resume file — auto-fills name/email/phone
+  const handleResumeSelect = async (file) => {
+    setAddForm(f => ({ ...f, resume: file }));
+    setExtractNote('');
+    if (!file) return;
+
+    setExtracting(true);
+    try {
+      const data = new FormData();
+      data.append('resume', file);
+      const res = await axiosInstance.post('/candidates/extract', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const { fullName, email, phone } = res.data;
+
+      setAddForm(f => ({
+        ...f,
+        fullName: fullName || f.fullName,
+        email:    email    || f.email,
+        phone:    phone    || f.phone,
+      }));
+
+      if (!fullName && !email) {
+        setExtractNote('Could not auto-read details from this PDF — please fill them in manually.');
+      }
+    } catch (err) {
+      setExtractNote('Auto-extraction failed — please fill in the details manually.');
+    } finally {
+      setExtracting(false);
+    }
+  };
+
   const handleAddCandidate = async (e) => {
     e.preventDefault();
     setAddError('');
@@ -101,8 +135,8 @@ export default function CandidateList() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      // Reset & close modal
       setAddForm({ jobPostingId: '', fullName: '', email: '', phone: '', resume: null });
+      setExtractNote('');
       setShowAddModal(false);
       fetchCandidates(selectedJob);
     } catch (err) {
@@ -138,7 +172,7 @@ export default function CandidateList() {
           <p className="text-xs text-slate-500 mt-0.5">Upload resumes, screen candidates with Groq AI, and generate interview questions.</p>
         </div>
         <button
-          onClick={() => { setShowAddModal(true); setAddError(''); }}
+          onClick={() => { setShowAddModal(true); setAddError(''); setExtractNote(''); }}
           className="btn-primary text-sm flex items-center justify-center gap-2 cursor-pointer py-2.5 px-4"
         >
           <span>+ Add Candidate Resume</span>
@@ -189,7 +223,7 @@ export default function CandidateList() {
           {candidates.map(c => (
             <div key={c.id} className="card hover:shadow-md transition-shadow">
               <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
-                
+
                 {/* Candidate Info */}
                 <div className="flex-1">
                   <div className="flex items-center gap-3 flex-wrap mb-1">
@@ -221,7 +255,6 @@ export default function CandidateList() {
                     )}
                   </div>
 
-                  {/* Skills Pills */}
                   {c.matchingSkills && (
                     <div className="mt-3 flex flex-wrap gap-1.5 items-center">
                       <span className="text-xs font-medium text-slate-500 mr-1">Skills:</span>
@@ -238,7 +271,6 @@ export default function CandidateList() {
                     </div>
                   )}
 
-                  {/* AI Summary Reasoning */}
                   {c.aiSummary && (
                     <div className="mt-3 p-3 bg-indigo-50/60 border border-indigo-100 rounded-xl text-xs text-indigo-950">
                       <p className="font-semibold text-indigo-800 mb-0.5">AI Evaluation Summary:</p>
@@ -293,7 +325,6 @@ export default function CandidateList() {
 
               </div>
 
-              {/* Collapsible Interview Questions */}
               {c.interviewQuestions && (
                 <div className="mt-4 pt-3 border-t border-slate-100">
                   <button
@@ -302,7 +333,7 @@ export default function CandidateList() {
                   >
                     <span>{expanded === c.id ? '▲ Hide Generated Interview Questions' : '▼ View 5 Personalized Interview Questions'}</span>
                   </button>
-                  
+
                   {expanded === c.id && (
                     <div className="mt-3 space-y-2">
                       {parseJson(c.interviewQuestions).map((q, i) => (
@@ -324,7 +355,7 @@ export default function CandidateList() {
       {showAddModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 border border-slate-200">
-            
+
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-5">
               <h3 className="text-lg font-bold text-slate-800">Add Candidate Application</h3>
               <button
@@ -359,12 +390,36 @@ export default function CandidateList() {
               </div>
 
               <div>
+                <label className="label" htmlFor="candResume">Resume (PDF Only) *</label>
+                <input
+                  id="candResume"
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  className="input file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                  onChange={e => handleResumeSelect(e.target.files[0] || null)}
+                  required
+                />
+                {extracting ? (
+                  <p className="text-xs text-indigo-600 mt-1 flex items-center gap-1.5">
+                    <span className="inline-block animate-spin">⏳</span>
+                    Reading resume — auto-filling details below…
+                  </p>
+                ) : extractNote ? (
+                  <p className="text-xs text-yellow-600 mt-1">{extractNote}</p>
+                ) : (
+                  <p className="text-xs text-slate-400 mt-1">
+                    Name, email, and phone below will be auto-filled from the resume — just review before saving.
+                  </p>
+                )}
+              </div>
+
+              <div>
                 <label className="label" htmlFor="candName">Candidate Full Name *</label>
                 <input
                   id="candName"
                   type="text"
                   className="input"
-                  placeholder="e.g. Rahul Sharma"
+                  placeholder="Auto-filled from resume — edit if needed"
                   value={addForm.fullName}
                   onChange={e => setAddForm({ ...addForm, fullName: e.target.value })}
                   required
@@ -378,7 +433,7 @@ export default function CandidateList() {
                     id="candEmail"
                     type="email"
                     className="input"
-                    placeholder="candidate@email.com"
+                    placeholder="Auto-filled from resume"
                     value={addForm.email}
                     onChange={e => setAddForm({ ...addForm, email: e.target.value })}
                     required
@@ -390,36 +445,23 @@ export default function CandidateList() {
                     id="candPhone"
                     type="tel"
                     className="input"
-                    placeholder="+91 98765 43210"
+                    placeholder="Auto-filled if found"
                     value={addForm.phone}
                     onChange={e => setAddForm({ ...addForm, phone: e.target.value })}
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="label" htmlFor="candResume">Resume (PDF Only) *</label>
-                <input
-                  id="candResume"
-                  type="file"
-                  accept=".pdf,application/pdf"
-                  className="input file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                  onChange={e => setAddForm({ ...addForm, resume: e.target.files[0] || null })}
-                  required
-                />
-                <p className="text-xs text-slate-400 mt-1">PDF text will be extracted automatically for AI evaluation.</p>
-              </div>
-
               <div className="flex gap-3 pt-3 border-t border-slate-100">
                 <button
                   type="submit"
-                  disabled={uploading}
+                  disabled={uploading || extracting}
                   className="btn-primary flex-1 py-2.5 text-xs flex items-center justify-center gap-2"
                 >
                   {uploading ? (
                     <>
                       <span className="inline-block animate-spin">⏳</span>
-                      Uploading & Parsing...
+                      Saving...
                     </>
                   ) : (
                     'Upload & Save Candidate'

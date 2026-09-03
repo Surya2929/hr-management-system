@@ -3,6 +3,7 @@ package com.hrapp.controller;
 import com.hrapp.entity.Candidate;
 import com.hrapp.entity.Candidate.CandidateStatus;
 import com.hrapp.entity.User;
+import com.hrapp.service.CandidateParsingService;
 import com.hrapp.service.CandidateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,19 @@ import java.util.Map;
 public class CandidateController {
 
     private final CandidateService candidateService;
+    private final CandidateParsingService candidateParsingService;
+
+    /**
+     * POST /api/candidates/extract
+     * HR only — upload just the resume PDF, AI extracts name/email/phone
+     * so HR doesn't have to type them manually. Does NOT save anything yet.
+     */
+    @PostMapping(value = "/extract", consumes = "multipart/form-data")
+    @PreAuthorize("hasRole('HR')")
+    public ResponseEntity<Map<String, String>> extractContactDetails(
+            @RequestParam("resume") MultipartFile resume) throws IOException {
+        return ResponseEntity.ok(candidateParsingService.extractContactDetails(resume));
+    }
 
     /**
      * POST /api/candidates/add
@@ -60,10 +74,6 @@ public class CandidateController {
         return ResponseEntity.status(HttpStatus.CREATED).body(candidate);
     }
 
-    /**
-     * GET /api/candidates/job/{jobPostingId}
-     * HR only — all candidates for a specific job sorted by AI score
-     */
     @GetMapping("/job/{jobPostingId}")
     @PreAuthorize("hasRole('HR')")
     public ResponseEntity<List<Candidate>> getCandidatesByJob(
@@ -80,28 +90,18 @@ public class CandidateController {
         return ResponseEntity.ok(candidates);
     }
 
-    /**
-     * GET /api/candidates/ranked
-     * HR only — all candidates globally sorted by AI score
-     */
     @GetMapping("/ranked")
     @PreAuthorize("hasRole('HR')")
     public ResponseEntity<List<Candidate>> getAllCandidatesRanked() {
         return ResponseEntity.ok(candidateService.getAllCandidatesRanked());
     }
 
-    /**
-     * GET /api/candidates/{id}
-     */
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('HR')")
     public ResponseEntity<Candidate> getCandidateById(@PathVariable Long id) {
         return ResponseEntity.ok(candidateService.getCandidateById(id));
     }
 
-    /**
-     * PUT /api/candidates/{id}/status
-     */
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('HR')")
     public ResponseEntity<Candidate> updateStatus(
@@ -114,9 +114,6 @@ public class CandidateController {
         return ResponseEntity.ok(candidateService.updateStatus(id, status));
     }
 
-    /**
-     * DELETE /api/candidates/{id}
-     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('HR')")
     public ResponseEntity<String> deleteCandidate(@PathVariable Long id) {
