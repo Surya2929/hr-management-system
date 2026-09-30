@@ -56,11 +56,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
+            .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
+                // Allow browser preflight (OPTIONS) requests
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                // Public auth endpoints: Login & Employee Registration
                 .requestMatchers("/api/auth/**").permitAll()
+                // Allow reading departments during registration
                 .requestMatchers(HttpMethod.GET, "/api/departments").permitAll()
+                // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
