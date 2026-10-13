@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import { ProtectedRoute, RoleRoute } from './components/ProtectedRoute';
+import { RoleRoute } from './components/ProtectedRoute';
 
 // Auth Page (Login & Employee Registration)
 import Login from './pages/Login';
@@ -69,9 +69,9 @@ export default function App() {
 
           {/* Employee Routes (Protected with Role 'EMPLOYEE') */}
           <Route path="/emp" element={
-            <ProtectedRoute>
+            <RoleRoute role="EMPLOYEE">
               <EmpLayout />
-            </ProtectedRoute>
+            </RoleRoute>
           }>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard"  element={<EmployeeDashboard />} />

@@ -2,6 +2,14 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 
+// Defined outside the form so inputs keep focus while typing
+const Field = ({ label, id, type = 'text', value, onChange, required }) => (
+  <div>
+    <label className="label" htmlFor={id}>{label}{required && ' *'}</label>
+    <input id={id} type={type} className="input" value={value} onChange={onChange} required={required} />
+  </div>
+);
+
 export default function EmployeeForm() {
   const { id }   = useParams();
   const isEdit   = Boolean(id);
@@ -70,13 +78,6 @@ export default function EmployeeForm() {
       setLoading(false);
     }
   };
-
-  const Field = ({ label, id, type = 'text', value, onChange, required }) => (
-    <div>
-      <label className="label" htmlFor={id}>{label}{required && ' *'}</label>
-      <input id={id} type={type} className="input" value={value} onChange={onChange} required={required} />
-    </div>
-  );
 
   return (
     <div>

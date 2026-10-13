@@ -189,7 +189,7 @@ export default function CandidateList() {
             value={selectedJob}
             onChange={e => handleJobChange(e.target.value)}
           >
-            <option value="all">All Jobs ({candidates.length})</option>
+            <option value="all">All Jobs</option>
             {jobs.map(j => (
               <option key={j.id} value={j.id}>{j.title}</option>
             ))}

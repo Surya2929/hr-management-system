@@ -14,11 +14,12 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
-// Redirect to login on 401
+// Redirect to login on 401 (except for login/register, so the form can show the error)
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isAuthCall = error.config?.url?.startsWith('/auth/');
+    if (error.response?.status === 401 && !isAuthCall) {
       localStorage.clear();
       window.location.href = '/login';
     }

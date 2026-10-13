@@ -23,11 +23,13 @@ export default function LeaveApproval() {
   };
 
   const approve = (id) => {
-    const remarks = prompt('Approval remarks (optional):') || '';
+    const remarks = prompt('Approval remarks (optional):');
+    if (remarks === null) return; // Cancel pressed
     handleAction(id, 'approve', remarks);
   };
   const reject = (id) => {
-    const remarks = prompt('Rejection reason:') || '';
+    const remarks = prompt('Rejection reason:');
+    if (remarks === null) return; // Cancel pressed
     handleAction(id, 'reject', remarks);
   };
 

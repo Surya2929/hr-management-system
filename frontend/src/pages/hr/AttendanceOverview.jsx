@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 
 export default function AttendanceOverview() {
-  const [date, setDate]           = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate]           = useState(new Date().toLocaleDateString('en-CA')); // local YYYY-MM-DD
   const [records, setRecords]     = useState([]);
   const [loading, setLoading]     = useState(false);
 
