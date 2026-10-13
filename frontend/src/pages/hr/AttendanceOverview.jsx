@@ -26,7 +26,7 @@ export default function AttendanceOverview() {
       <h2 className="text-2xl font-bold text-slate-800 mb-6">Attendance Overview</h2>
 
       <div className="card">
-        <div className="flex items-center gap-4 mb-5">
+        <div className="flex flex-wrap items-center gap-4 mb-5">
           <div>
             <label className="label" htmlFor="attDate">Select Date</label>
             <input id="attDate" type="date" className="input w-48"

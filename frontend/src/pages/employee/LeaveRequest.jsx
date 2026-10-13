@@ -75,7 +75,7 @@ export default function LeaveRequest() {
               <h3 className="font-bold text-slate-800">Annual Leave Quota ({balance.year})</h3>
               <p className="text-xs text-slate-500 mt-0.5">Track your available paid and casual leaves</p>
             </div>
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6">
               <div className="text-center">
                 <p className="text-xs text-slate-400">Total Allowed</p>
                 <p className="text-xl font-bold text-slate-700">{balance.totalAllowed} days</p>

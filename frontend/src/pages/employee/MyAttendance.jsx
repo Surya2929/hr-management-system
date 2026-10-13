@@ -84,7 +84,7 @@ export default function MyAttendance() {
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {history.length === 0 && <p className="text-slate-400 text-sm">No records yet</p>}
               {history.map(r => (
-                <div key={r.id} className="flex items-center justify-between text-sm border-b pb-2">
+                <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 text-sm border-b pb-2">
                   <span className="text-slate-600">{r.date}</span>
                   {statusBadge(r.status)}
                   <span className="text-xs text-slate-400">{r.checkIn || '—'} → {r.checkOut || '—'}</span>

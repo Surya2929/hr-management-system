@@ -82,12 +82,12 @@ export default function DepartmentList() {
           {loading ? <p className="text-slate-400">Loading…</p> : (
             <ul className="divide-y divide-slate-100">
               {departments.map(d => (
-                <li key={d.id} className="py-3 flex justify-between items-center">
-                  <div>
-                    <p className="font-medium text-sm">{d.name}</p>
-                    <p className="text-xs text-slate-400">{d.description || '—'}</p>
+                <li key={d.id} className="py-3 flex justify-between items-center gap-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm break-words">{d.name}</p>
+                    <p className="text-xs text-slate-400 break-words">{d.description || '—'}</p>
                   </div>
-                  <div className="flex gap-3 text-xs">
+                  <div className="flex gap-3 text-xs shrink-0">
                     <button onClick={() => startEdit(d)} className="text-indigo-600 hover:underline">Edit</button>
                     <button onClick={() => handleDelete(d.id, d.name)} className="text-red-500 hover:underline">Delete</button>
                   </div>

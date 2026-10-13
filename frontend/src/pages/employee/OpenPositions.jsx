@@ -98,7 +98,7 @@ function ReferModal({ job, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-full overflow-y-auto p-5 sm:p-6" onClick={(e) => e.stopPropagation()}>
         {success ? (
           <div className="text-center py-4">
             <div className="text-4xl mb-3">✅</div>

@@ -63,7 +63,7 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:sticky top-0 left-0 z-50 md:z-30 w-[280px] md:w-64 h-screen bg-slate-900 text-white flex flex-col shrink-0 shadow-2xl md:shadow-none transition-transform duration-300 ease-out
+        className={`fixed top-0 left-0 z-50 md:z-30 w-[280px] max-w-[85vw] md:w-64 h-dvh bg-slate-900 text-white flex flex-col shrink-0 shadow-2xl md:shadow-none transition-transform duration-300 ease-out
           ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
       >
         <div className="px-5 py-5 border-b border-slate-700 flex items-start justify-between gap-3">

@@ -280,7 +280,7 @@ export default function CandidateList() {
                 </div>
 
                 {/* Actions Panel */}
-                <div className="flex flex-row lg:flex-col gap-2 min-w-fit items-stretch justify-end pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                <div className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:flex-col gap-2 lg:min-w-fit items-stretch pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100">
                   <button
                     onClick={() => screenResume(c.id)}
                     disabled={aiLoading[`screen_${c.id}`]}
@@ -354,7 +354,7 @@ export default function CandidateList() {
       {/* ADD CANDIDATE MODAL */}
       {showAddModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 border border-slate-200">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-full overflow-y-auto p-5 sm:p-8 border border-slate-200">
 
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-5">
               <h3 className="text-lg font-bold text-slate-800">Add Candidate Application</h3>
