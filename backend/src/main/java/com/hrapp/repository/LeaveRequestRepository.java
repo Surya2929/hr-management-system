@@ -2,6 +2,7 @@ package com.hrapp.repository;
 import com.hrapp.entity.LeaveRequest;
 import com.hrapp.entity.LeaveRequest.LeaveStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
@@ -18,4 +19,9 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest,Long>
     boolean existsOverlappingLeave(@Param("eid") Long eid, @Param("from") LocalDate from, @Param("to") LocalDate to);
 
     long countByStatus(LeaveStatus status);
+
+    // Used when HR deletes an employee: removes all their LeaveRequest rows in one query
+    @Modifying
+    @Query("DELETE FROM LeaveRequest x WHERE x.employee.id = :employeeId")
+    void deleteAllByEmployeeId(@Param("employeeId") Long employeeId);
 }

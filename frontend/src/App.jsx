@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { RoleRoute } from './components/ProtectedRoute';
 
-// Auth Page (Login & Employee Registration)
+// Auth Page (Login & account activation)
 import Login from './pages/Login';
 import ChangePassword from './pages/ChangePassword';
 
@@ -33,7 +33,7 @@ export default function App() {
           {/* Default redirect to Login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
 
-          {/* Authentication (Login + Employee Self-Registration) */}
+          {/* Authentication (Login + new-employee account activation) */}
           <Route path="/login" element={<Login />} />
 
           {/* Unauthorized Fallback */}
@@ -66,7 +66,6 @@ export default function App() {
             <Route path="jobs/new"           element={<JobPostingForm />} />
             <Route path="jobs/:id/edit"      element={<JobPostingForm />} />
             <Route path="candidates"         element={<CandidateList />} />
-            <Route path="change-password"    element={<ChangePassword />} />
           </Route>
 
           {/* Employee Routes (Protected with Role 'EMPLOYEE') */}

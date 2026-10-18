@@ -1,10 +1,10 @@
 package com.hrapp.controller;
 
+import com.hrapp.dto.ActivateAccountRequest;
 import com.hrapp.dto.ChangePasswordRequest;
 import com.hrapp.dto.ForgotPasswordRequest;
 import com.hrapp.dto.LoginRequest;
 import com.hrapp.dto.LoginResponse;
-import com.hrapp.dto.RegisterRequest;
 import com.hrapp.dto.ResetPasswordRequest;
 import com.hrapp.entity.User;
 import com.hrapp.service.AuthService;
@@ -12,14 +12,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@Tag(name = "Auth", description = "Login, registration and passwords")
+@Tag(name = "Auth", description = "Login, account activation and passwords")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -33,10 +32,18 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
-    @Operation(summary = "Public self-registration - always creates an EMPLOYEE account")
-    @PostMapping("/register")
-    public ResponseEntity<LoginResponse> registerEmployee(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerEmployee(request));
+    @Operation(summary = "Activation step 1: verify email + temporary password from HR")
+    @PostMapping("/activate/verify")
+    public ResponseEntity<Map<String, String>> verifyActivation(@Valid @RequestBody ActivateAccountRequest request) {
+        authService.verifyActivation(request.getEmail(), request.getTemporaryPassword());
+        return ResponseEntity.ok(Map.of("message", "Verified. Now set your own password."));
+    }
+
+    @Operation(summary = "Activation step 2: set your own password and log in")
+    @PostMapping("/activate/complete")
+    public ResponseEntity<LoginResponse> completeActivation(@Valid @RequestBody ActivateAccountRequest request) {
+        return ResponseEntity.ok(authService.completeActivation(
+                request.getEmail(), request.getTemporaryPassword(), request.getNewPassword()));
     }
 
     @Operation(summary = "Change my password (needs login)")

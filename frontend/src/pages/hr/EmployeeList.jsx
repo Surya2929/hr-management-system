@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import Pagination from '../../components/Pagination';
 import useDebounce from '../../hooks/useDebounce';
+import TempPasswordModal from '../../components/TempPasswordModal';
 
 const PAGE_SIZE = 10;
 
@@ -41,8 +42,25 @@ export default function EmployeeList() {
     return () => { ignore = true; };
   }, [debouncedSearch, departmentId, page, reload]);
 
+  const [tempPw, setTempPw] = useState(null); // { name, email, password } to show HR
+
+  // HR issues a fresh temporary password (employee lost it or forgot their password)
+  const handleNewTempPassword = async (emp) => {
+    const name = `${emp.firstName} ${emp.lastName}`;
+    if (!confirm(`Create a new temporary password for ${name}? Their current password will stop working.`)) return;
+    try {
+      const res = await axiosInstance.post(`/employees/${emp.id}/reset-temp-password`);
+      setTempPw({ name, email: emp.user?.email, password: res.data.temporaryPassword });
+      setReload(r => r + 1); // refresh the "Pending activation" badge
+    } catch (err) {
+      alert(err.response?.data?.message || 'Could not create a temporary password');
+    }
+  };
+
   const handleDelete = async (id, name) => {
-    if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
+    if (!confirm(`Remove ${name}?
+
+This deletes their login, attendance and leave history. It cannot be undone.`)) return;
     try {
       await axiosInstance.delete(`/employees/${id}`);
       setReload(r => r + 1);
@@ -96,13 +114,21 @@ export default function EmployeeList() {
                   <tr><td colSpan={5} className="py-8 text-center text-neutral-400">No employees found</td></tr>
                 ) : employees.map(emp => (
                   <tr key={emp.id} className="hover:bg-neutral-50">
-                    <td className="py-3 pr-4 font-medium">{emp.firstName} {emp.lastName}</td>
+                    <td className="py-3 pr-4 font-medium">
+                      {emp.firstName} {emp.lastName}
+                      {emp.user?.mustChangePassword && (
+                        <span className="badge-pending ml-2" title="Has not activated the account yet">Pending activation</span>
+                      )}
+                    </td>
                     <td className="py-3 pr-4 text-neutral-500">{emp.user?.email}</td>
                     <td className="py-3 pr-4">{emp.designation || '—'}</td>
                     <td className="py-3 pr-4">{emp.department?.name || '—'}</td>
-                    <td className="py-3 flex gap-2">
+                    <td className="py-3 flex flex-wrap gap-x-3 gap-y-1">
                       <Link to={`/hr/employees/${emp.id}/edit`}
                         className="text-brand-600 hover:underline text-xs">Edit</Link>
+                      <button
+                        onClick={() => handleNewTempPassword(emp)}
+                        className="text-neutral-700 hover:underline text-xs whitespace-nowrap">New temp password</button>
                       <button
                         onClick={() => handleDelete(emp.id, `${emp.firstName} ${emp.lastName}`)}
                         className="text-red-500 hover:underline text-xs">Delete</button>
@@ -115,6 +141,15 @@ export default function EmployeeList() {
         )}
         <Pagination page={pageInfo} onChange={setPage} />
       </div>
+
+      {tempPw && (
+        <TempPasswordModal
+          name={tempPw.name}
+          email={tempPw.email}
+          password={tempPw.password}
+          onClose={() => setTempPw(null)}
+        />
+      )}
     </div>
   );
 }

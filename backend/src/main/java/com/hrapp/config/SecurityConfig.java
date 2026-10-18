@@ -65,12 +65,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // Change password needs a logged-in user (must come before the permitAll below)
                 .requestMatchers("/api/auth/change-password").authenticated()
-                // Public auth endpoints: login, register, forgot/reset password
+                // Public auth endpoints: login, account activation, forgot/reset password
                 .requestMatchers("/api/auth/**").permitAll()
                 // Swagger UI and API docs
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                // Allow reading departments during registration
-                .requestMatchers(HttpMethod.GET, "/api/departments").permitAll()
                 // All other endpoints require authentication
                 .anyRequest().authenticated()
             )

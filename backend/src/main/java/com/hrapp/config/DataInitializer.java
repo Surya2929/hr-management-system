@@ -64,23 +64,44 @@ public class DataInitializer {
                 );
             }
 
-            // 2. Create the HR admin account from env variables (only the first time)
+            // 2. The ONE HR admin account. Email + password always come from the env variables
+            //    HR_ADMIN_EMAIL / HR_ADMIN_PASSWORD (set privately on the server), so they stay fixed.
             if (hrEmail.isBlank() || hrPassword.isBlank()) {
-                log.warn("HR_ADMIN_EMAIL / HR_ADMIN_PASSWORD not set - skipping HR admin creation");
+                // Fail safe: with no configured admin, no HR account may log in
+                // (otherwise an old account with a known password would stay open)
+                for (User old : userRepository.findByRole(User.Role.HR)) {
+                    old.setIsActive(false);
+                    userRepository.save(old);
+                }
+                log.error("HR_ADMIN_EMAIL / HR_ADMIN_PASSWORD are not set - all HR logins are disabled until they are set");
                 return;
             }
-            if (userRepository.existsByEmail(hrEmail)) {
-                log.info("HR admin {} already exists - password left unchanged", hrEmail);
-                return;
+            if (hrPassword.length() < 12) {
+                log.warn("HR_ADMIN_PASSWORD is short - use at least 12 characters");
             }
 
-            userRepository.save(User.builder()
-                    .email(hrEmail)
-                    .password(passwordEncoder.encode(hrPassword))
-                    .role(User.Role.HR)
-                    .isActive(true)
-                    .build());
-            log.info("HR admin account created: {}", hrEmail);
+            User hr = userRepository.findByEmail(hrEmail).orElse(null);
+            if (hr != null && hr.getRole() != User.Role.HR) {
+                log.error("{} belongs to an employee account - choose a different HR_ADMIN_EMAIL", hrEmail);
+                return;
+            }
+            if (hr == null) {
+                hr = User.builder().email(hrEmail).role(User.Role.HR).build();
+            }
+            hr.setPassword(passwordEncoder.encode(hrPassword)); // env value is the source of truth
+            hr.setIsActive(true);
+            hr.setMustChangePassword(false);
+            userRepository.save(hr);
+            log.info("HR admin ready: {}", hrEmail);
+
+            // 3. Only that account may be HR - switch off any other HR logins (e.g. old hr@company.com)
+            for (User other : userRepository.findByRole(User.Role.HR)) {
+                if (!other.getEmail().equalsIgnoreCase(hrEmail) && Boolean.TRUE.equals(other.getIsActive())) {
+                    other.setIsActive(false);
+                    userRepository.save(other);
+                    log.warn("Disabled extra HR account: {}", other.getEmail());
+                }
+            }
         };
     }
 }

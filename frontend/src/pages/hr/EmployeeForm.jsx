@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
+import TempPasswordModal from '../../components/TempPasswordModal';
 
 // Defined outside the form so inputs keep focus while typing
 const Field = ({ label, id, type = 'text', value, onChange, required }) => (
@@ -17,11 +18,12 @@ export default function EmployeeForm() {
 
   const [departments, setDepartments] = useState([]);
   const [form, setForm] = useState({
-    email: '', password: '', firstName: '', lastName: '',
+    email: '', firstName: '', lastName: '',
     phone: '', designation: '', salary: '', dateJoined: '', departmentId: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
+  const [created, setCreated] = useState(null); // { name, email, password } after HR adds someone
 
   useEffect(() => {
     axiosInstance.get('/departments').then(r => setDepartments(r.data));
@@ -30,7 +32,6 @@ export default function EmployeeForm() {
         const e = res.data;
         setForm({
           email:        e.user?.email || '',
-          password:     '',
           firstName:    e.firstName   || '',
           lastName:     e.lastName    || '',
           phone:        e.phone       || '',
@@ -61,15 +62,21 @@ export default function EmployeeForm() {
           departmentId: form.departmentId || undefined,
         });
       } else {
-        await axiosInstance.post('/auth/register', {
+        // HR creates the account; the server returns a one-time temporary password
+        const res = await axiosInstance.post('/employees', {
           email:        form.email,
-          password:     form.password,
           firstName:    form.firstName,
           lastName:     form.lastName,
           phone:        form.phone,
           designation:  form.designation,
           departmentId: form.departmentId || undefined,
         });
+        setCreated({
+          name: `${form.firstName} ${form.lastName}`,
+          email: form.email,
+          password: res.data.temporaryPassword,
+        });
+        return; // stay here until HR has copied the password
       }
       navigate('/hr/employees');
     } catch (err) {
@@ -89,9 +96,10 @@ export default function EmployeeForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isEdit && (
             <>
-              <Field label="Email"    id="email"    type="email"    value={form.email}    onChange={set('email')}    required />
-              <Field label="Password" id="password" type="password" value={form.password} onChange={set('password')} required />
-              <p className="text-xs text-neutral-400 -mt-2">At least 8 characters, including a number.</p>
+              <Field label="Work Email" id="email" type="email" value={form.email} onChange={set('email')} required />
+              <p className="text-xs text-neutral-400 -mt-2">
+                A temporary password is generated automatically. The employee sets their own password when activating.
+              </p>
             </>
           )}
 
@@ -120,7 +128,7 @@ export default function EmployeeForm() {
             </select>
           </div>
 
-          {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded">{error}</p>}
+          {error && <p className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-2xl" role="alert">{error}</p>}
 
           <div className="flex gap-3 pt-2">
             <button type="submit" disabled={loading} className="btn-primary">
@@ -132,6 +140,15 @@ export default function EmployeeForm() {
           </div>
         </form>
       </div>
+
+      {created && (
+        <TempPasswordModal
+          name={created.name}
+          email={created.email}
+          password={created.password}
+          onClose={() => navigate('/hr/employees')}
+        />
+      )}
     </div>
   );
 }

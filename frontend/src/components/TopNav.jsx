@@ -41,7 +41,8 @@ export default function TopNav() {
 
   const isHr = user?.role === 'HR';
   const links = isHr ? hrLinks : employeeLinks;
-  const settingsPath = isHr ? '/hr/change-password' : '/emp/change-password';
+  // HR password is fixed on the server, so only employees get a Change Password page
+  const settingsPath = isHr ? null : '/emp/change-password';
   const initials = (user?.email || '?').slice(0, 2).toUpperCase();
   const isActive = (to) => location.pathname.startsWith(to);
 
@@ -81,6 +82,7 @@ export default function TopNav() {
 
         {/* Desktop: settings, user chip, logout */}
         <div className="hidden md:flex items-center gap-2 shrink-0">
+          {settingsPath && (
           <Link
             to={settingsPath}
             className={`icon-btn ${isActive(settingsPath) ? '!bg-neutral-900 !text-white !border-neutral-900' : ''}`}
@@ -89,6 +91,7 @@ export default function TopNav() {
           >
             <FiSettings className="w-[18px] h-[18px]" aria-hidden="true" />
           </Link>
+          )}
           <div className="flex items-center gap-2.5 pl-1">
             <span className="w-10 h-10 rounded-full bg-neutral-900 text-white grid place-items-center text-sm font-medium">
               {initials}
@@ -142,7 +145,7 @@ export default function TopNav() {
             </div>
 
             <nav className="flex-1 overflow-y-auto space-y-1" aria-label="Main">
-              {[...links, { to: settingsPath, label: 'Change Password', icon: FiSettings }].map(({ to, label, icon: Icon }) => (
+              {[...links, ...(settingsPath ? [{ to: settingsPath, label: 'Change Password', icon: FiSettings }] : [])].map(({ to, label, icon: Icon }) => (
                 <Link
                   key={to}
                   to={to}

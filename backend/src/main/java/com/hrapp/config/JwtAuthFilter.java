@@ -35,7 +35,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails user = userRepository.findByEmail(email)
                         .orElseThrow(() -> new RuntimeException("User not found"));
-                if (jwtUtil.validateToken(jwt, user)) {
+                // isEnabled(): a disabled account's old token stops working immediately
+                if (user.isEnabled() && jwtUtil.validateToken(jwt, user)) {
                     var auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
                     SecurityContextHolder.getContext().setAuthentication(auth);

@@ -72,6 +72,14 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.UNAUTHORIZED, "Invalid email or password");
     }
 
+    // 403 - correct temporary password, but the account must be activated first.
+    // error = "ACTIVATION_REQUIRED" lets the frontend open the activation screen.
+    @ExceptionHandler(AccountNotActivatedException.class)
+    public ResponseEntity<Map<String, Object>> handleNotActivated(AccountNotActivatedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(buildBody(HttpStatus.FORBIDDEN, "ACTIVATION_REQUIRED", ex.getMessage()));
+    }
+
     // 403 - logged in but wrong role
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {

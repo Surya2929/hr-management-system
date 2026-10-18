@@ -28,6 +28,11 @@ public class User implements UserDetails {
     @Column(nullable=false)
     private Role role;
 
+    // true = HR created this account with a temporary password; the employee must activate it
+    @Builder.Default
+    @Column(name="must_change_password")
+    private Boolean mustChangePassword = false;
+
     @Builder.Default
     @Column(name="is_active")
     private Boolean isActive = true;

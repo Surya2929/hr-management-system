@@ -1,5 +1,6 @@
 package com.hrapp.repository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import com.hrapp.entity.Attendance;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,4 +16,9 @@ public interface AttendanceRepository extends JpaRepository<Attendance,Long> {
     // Dashboard: today's attendance per status
     @Query("SELECT a.status, COUNT(a) FROM Attendance a WHERE a.date = :date GROUP BY a.status")
     List<Object[]> countByStatusOnDate(@Param("date") LocalDate date);
+
+    // Used when HR deletes an employee: removes all their Attendance rows in one query
+    @Modifying
+    @Query("DELETE FROM Attendance x WHERE x.employee.id = :employeeId")
+    void deleteAllByEmployeeId(@Param("employeeId") Long employeeId);
 }

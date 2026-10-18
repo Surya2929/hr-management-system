@@ -1,15 +1,19 @@
 package com.hrapp.controller;
 
+import com.hrapp.dto.CreateEmployeeRequest;
+import com.hrapp.dto.CreateEmployeeResponse;
 import com.hrapp.entity.Employee;
 import com.hrapp.entity.User;
 import com.hrapp.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -38,6 +42,20 @@ public class EmployeeController {
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100),
                 Sort.by("firstName").and(Sort.by("lastName")));
         return ResponseEntity.ok(employeeService.searchEmployees(search, departmentId, pageable));
+    }
+
+    @Operation(summary = "Add a new hire - returns a one-time temporary password (HR)")
+    @PostMapping
+    @PreAuthorize("hasRole('HR')")
+    public ResponseEntity<CreateEmployeeResponse> createEmployee(@Valid @RequestBody CreateEmployeeRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.createEmployee(request));
+    }
+
+    @Operation(summary = "Issue a new temporary password for an employee (HR)")
+    @PostMapping("/{id}/reset-temp-password")
+    @PreAuthorize("hasRole('HR')")
+    public ResponseEntity<Map<String, String>> resetTemporaryPassword(@PathVariable Long id) {
+        return ResponseEntity.ok(Map.of("temporaryPassword", employeeService.resetTemporaryPassword(id)));
     }
 
     @Operation(summary = "One employee by id (HR)")
