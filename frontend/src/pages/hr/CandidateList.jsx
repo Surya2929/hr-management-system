@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 import Pagination from '../../components/Pagination';
 import useDebounce from '../../hooks/useDebounce';
+import { FiCpu, FiHelpCircle, FiLoader } from 'react-icons/fi';
 
 const PAGE_SIZE = 10;
 
@@ -194,8 +195,8 @@ export default function CandidateList() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">🤖 AI Candidate Screening</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Upload resumes, screen candidates with Groq AI, and generate interview questions.</p>
+          <h2 className="text-3xl sm:text-4xl font-light text-neutral-900">AI Candidate Screening</h2>
+          <p className="text-xs text-neutral-500 mt-0.5">Upload resumes, screen candidates with Groq AI, and generate interview questions.</p>
         </div>
         <button
           onClick={() => { setShowAddModal(true); setAddError(''); setExtractNote(''); }}
@@ -241,23 +242,23 @@ export default function CandidateList() {
             <option value="HIRED">Hired</option>
           </select>
         </div>
-        <div className="text-xs text-slate-500 mt-3">
-          Showing <span className="font-semibold text-slate-700">{candidates.length}</span> of{' '}
-          <span className="font-semibold text-slate-700">{pageInfo?.totalElements ?? 0}</span> candidate(s)
+        <div className="text-xs text-neutral-500 mt-3">
+          Showing <span className="font-semibold text-neutral-700">{candidates.length}</span> of{' '}
+          <span className="font-semibold text-neutral-700">{pageInfo?.totalElements ?? 0}</span> candidate(s)
         </div>
       </div>
 
       {/* Candidates List */}
       {loading ? (
         <div className="card text-center py-12">
-          <p className="text-slate-400 text-sm">Loading candidates…</p>
+          <p className="text-neutral-400 text-sm">Loading candidates…</p>
         </div>
       ) : (
         <div className="space-y-4">
           {candidates.length === 0 && (
             <div className="card text-center py-12">
-              <p className="text-slate-500 font-medium mb-1">No candidates found.</p>
-              <p className="text-xs text-slate-400 mb-4">Click "Add Candidate Resume" to manually upload applicant resumes for evaluation.</p>
+              <p className="text-neutral-500 font-medium mb-1">No candidates found.</p>
+              <p className="text-xs text-neutral-400 mb-4">Click "Add Candidate Resume" to manually upload applicant resumes for evaluation.</p>
               <button
                 onClick={() => setShowAddModal(true)}
                 className="btn-primary text-xs py-2 px-4 inline-block"
@@ -274,29 +275,29 @@ export default function CandidateList() {
                 {/* Candidate Info */}
                 <div className="flex-1">
                   <div className="flex items-center gap-3 flex-wrap mb-1">
-                    <h3 className="font-bold text-slate-800 text-base">{c.fullName}</h3>
+                    <h3 className="font-bold text-neutral-800 text-base">{c.fullName}</h3>
                     <span className={statusColors[c.status] || 'badge-pending'}>{c.status}</span>
                     {c.aiScore != null && (
-                      <span className={`text-xs px-2.5 py-1 rounded-full bg-slate-100 ${scoreColor(c.aiScore)}`}>
-                        ★ AI Match: {c.aiScore}/100
+                      <span className={`text-xs px-2.5 py-1 rounded-full bg-neutral-100 ${scoreColor(c.aiScore)}`}>
+                        AI Match {c.aiScore}/100
                       </span>
                     )}
                     {c.referredByEmployee && (
-                      <span className="text-xs px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-medium">
-                        👋 Referred by {c.referredByEmployee}
+                      <span className="text-xs px-2.5 py-1 rounded-full bg-white text-neutral-700 border border-neutral-300 font-medium">
+                        Referred by {c.referredByEmployee}
                       </span>
                     )}
                   </div>
 
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-neutral-500">
                     {c.email} {c.phone ? `· ${c.phone}` : ''}
                   </p>
 
-                  <div className="mt-2 text-xs text-slate-600">
-                    <span className="font-semibold text-slate-700">Applied Job:</span>{' '}
-                    <span className="text-indigo-600 font-medium">{c.jobPosting?.title || `Job #${c.jobPosting?.id}`}</span>
+                  <div className="mt-2 text-xs text-neutral-600">
+                    <span className="font-semibold text-neutral-700">Applied Job:</span>{' '}
+                    <span className="text-brand-600 font-medium">{c.jobPosting?.title || `Job #${c.jobPosting?.id}`}</span>
                     {c.appliedAt && (
-                      <span className="text-slate-400 ml-2">
+                      <span className="text-neutral-400 ml-2">
                         ({new Date(c.appliedAt).toLocaleDateString()})
                       </span>
                     )}
@@ -304,7 +305,7 @@ export default function CandidateList() {
 
                   {c.matchingSkills && (
                     <div className="mt-3 flex flex-wrap gap-1.5 items-center">
-                      <span className="text-xs font-medium text-slate-500 mr-1">Skills:</span>
+                      <span className="text-xs font-medium text-neutral-500 mr-1">Skills:</span>
                       {parseJson(c.matchingSkills).map(s => (
                         <span key={s} className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs rounded-md">
                           ✓ {s}
@@ -319,15 +320,15 @@ export default function CandidateList() {
                   )}
 
                   {c.aiSummary && (
-                    <div className="mt-3 p-3 bg-indigo-50/60 border border-indigo-100 rounded-xl text-xs text-indigo-950">
-                      <p className="font-semibold text-indigo-800 mb-0.5">AI Evaluation Summary:</p>
+                    <div className="mt-3 p-3 bg-brand-50/60 border border-brand-100 rounded-xl text-xs text-brand-950">
+                      <p className="font-semibold text-brand-800 mb-0.5">AI Evaluation Summary:</p>
                       <p className="italic">"{c.aiSummary}"</p>
                     </div>
                   )}
                 </div>
 
                 {/* Actions Panel */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:flex-col gap-2 lg:min-w-fit items-stretch pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                <div className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:flex-col gap-2 lg:min-w-fit items-stretch pt-2 lg:pt-0 border-t lg:border-t-0 border-neutral-100">
                   <button
                     onClick={() => screenResume(c.id)}
                     disabled={aiLoading[`screen_${c.id}`]}
@@ -335,11 +336,11 @@ export default function CandidateList() {
                   >
                     {aiLoading[`screen_${c.id}`] ? (
                       <>
-                        <span className="inline-block animate-spin">⏳</span>
+                        <FiLoader className="w-4 h-4 animate-spin" aria-hidden="true" />
                         Screening...
                       </>
                     ) : (
-                      '🤖 Screen Resume'
+                      <><FiCpu className="w-4 h-4" aria-hidden="true" /> Screen Resume</>
                     )}
                   </button>
 
@@ -350,18 +351,18 @@ export default function CandidateList() {
                   >
                     {aiLoading[`q_${c.id}`] ? (
                       <>
-                        <span className="inline-block animate-spin">⏳</span>
+                        <FiLoader className="w-4 h-4 animate-spin" aria-hidden="true" />
                         Generating...
                       </>
                     ) : (
-                      '❓ Interview Qs'
+                      <><FiHelpCircle className="w-4 h-4" aria-hidden="true" /> Interview Qs</>
                     )}
                   </button>
 
                   <select
                     value={c.status}
                     onChange={e => updateStatus(c.id, e.target.value)}
-                    className="text-xs border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-slate-700 cursor-pointer"
+                    className="text-xs border border-neutral-300 rounded-full px-3 py-2 bg-white font-medium text-neutral-700 cursor-pointer"
                   >
                     <option value="APPLIED">Status: Applied</option>
                     <option value="SHORTLISTED">Status: Shortlisted</option>
@@ -373,10 +374,10 @@ export default function CandidateList() {
               </div>
 
               {c.interviewQuestions && (
-                <div className="mt-4 pt-3 border-t border-slate-100">
+                <div className="mt-4 pt-3 border-t border-neutral-100">
                   <button
                     onClick={() => setExpanded(expanded === c.id ? null : c.id)}
-                    className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+                    className="text-xs font-semibold text-brand-600 hover:text-brand-800 flex items-center gap-1 cursor-pointer"
                   >
                     <span>{expanded === c.id ? '▲ Hide Generated Interview Questions' : '▼ View 5 Personalized Interview Questions'}</span>
                   </button>
@@ -384,8 +385,8 @@ export default function CandidateList() {
                   {expanded === c.id && (
                     <div className="mt-3 space-y-2">
                       {parseJson(c.interviewQuestions).map((q, i) => (
-                        <div key={i} className="text-xs text-slate-800 bg-slate-50 border border-slate-200 p-3 rounded-xl">
-                          <span className="font-bold text-indigo-600 mr-1.5">Q{i + 1}.</span> {q}
+                        <div key={i} className="text-xs text-neutral-800 bg-neutral-50 border border-neutral-200 p-3 rounded-xl">
+                          <span className="font-bold text-brand-600 mr-1.5">Q{i + 1}.</span> {q}
                         </div>
                       ))}
                     </div>
@@ -402,14 +403,14 @@ export default function CandidateList() {
 
       {/* ADD CANDIDATE MODAL */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-full overflow-y-auto p-5 sm:p-8 border border-slate-200">
+        <div className="fixed inset-0 bg-neutral-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-full overflow-y-auto p-5 sm:p-8 border border-neutral-200">
 
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-5">
-              <h3 className="text-lg font-bold text-slate-800">Add Candidate Application</h3>
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 mb-5">
+              <h3 className="text-lg font-bold text-neutral-800">Add Candidate Application</h3>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg cursor-pointer"
+                className="text-neutral-400 hover:text-neutral-600 text-lg cursor-pointer"
               >
                 ✕
               </button>
@@ -444,19 +445,19 @@ export default function CandidateList() {
                   id="candResume"
                   type="file"
                   accept=".pdf,application/pdf"
-                  className="input file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                  className="input file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100"
                   onChange={e => handleResumeSelect(e.target.files[0] || null)}
                   required
                 />
                 {extracting ? (
-                  <p className="text-xs text-indigo-600 mt-1 flex items-center gap-1.5">
-                    <span className="inline-block animate-spin">⏳</span>
+                  <p className="text-xs text-brand-600 mt-1 flex items-center gap-1.5">
+                    <FiLoader className="w-4 h-4 animate-spin" aria-hidden="true" />
                     Reading resume — auto-filling details below…
                   </p>
                 ) : extractNote ? (
                   <p className="text-xs text-yellow-600 mt-1">{extractNote}</p>
                 ) : (
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-neutral-400 mt-1">
                     Name, email, and phone below will be auto-filled from the resume — just review before saving.
                   </p>
                 )}
@@ -501,7 +502,7 @@ export default function CandidateList() {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-3 border-t border-slate-100">
+              <div className="flex gap-3 pt-3 border-t border-neutral-100">
                 <button
                   type="submit"
                   disabled={uploading || extracting}
@@ -509,7 +510,7 @@ export default function CandidateList() {
                 >
                   {uploading ? (
                     <>
-                      <span className="inline-block animate-spin">⏳</span>
+                      <FiLoader className="w-4 h-4 animate-spin" aria-hidden="true" />
                       Saving...
                     </>
                   ) : (

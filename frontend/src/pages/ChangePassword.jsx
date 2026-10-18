@@ -42,7 +42,7 @@ export default function ChangePassword() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-slate-800 mb-6">Change Password</h2>
+      <h2 className="text-3xl sm:text-4xl font-light text-neutral-900 mb-6">Change Password</h2>
 
       <div className="card max-w-md">
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -55,7 +55,7 @@ export default function ChangePassword() {
             <label className="label" htmlFor="newPassword">New Password *</label>
             <input id="newPassword" type="password" className="input" autoComplete="new-password"
               value={form.newPassword} onChange={set('newPassword')} required minLength={8} />
-            <p className="text-xs text-slate-400 mt-1">At least 8 characters, including a number.</p>
+            <p className="text-xs text-neutral-400 mt-1">At least 8 characters, including a number.</p>
           </div>
           <div>
             <label className="label" htmlFor="confirmPassword">Confirm New Password *</label>

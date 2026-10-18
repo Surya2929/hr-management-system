@@ -34,35 +34,35 @@ export default function JobPostingList() {
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <h2 className="text-2xl font-bold text-slate-800">Job Postings</h2>
+        <h2 className="text-3xl sm:text-4xl font-light text-neutral-900">Job Postings</h2>
         <Link to="/hr/jobs/new" className="btn-primary text-sm text-center w-full sm:w-auto">+ Post New Job</Link>
       </div>
 
-      {loading ? <p className="text-slate-400">Loading…</p> : (
+      {loading ? <p className="text-neutral-400">Loading…</p> : (
         <div className="space-y-4">
-          {jobs.length === 0 && <p className="text-slate-400">No job postings yet.</p>}
+          {jobs.length === 0 && <p className="text-neutral-400">No job postings yet.</p>}
           {jobs.map(job => (
             <div key={job.id} className="card flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
-                  <h3 className="font-semibold text-slate-800">{job.title}</h3>
+                  <h3 className="font-semibold text-neutral-800">{job.title}</h3>
                   <span className={job.status === 'OPEN' ? 'badge-open' : 'badge-closed'}>
                     {job.status}
                   </span>
-                  <span className="text-xs text-slate-400">{job.employmentType}</span>
+                  <span className="text-xs text-neutral-400">{job.employmentType}</span>
                 </div>
-                <p className="text-sm text-slate-500 mb-1">{job.location || 'Location not specified'}</p>
+                <p className="text-sm text-neutral-500 mb-1">{job.location || 'Location not specified'}</p>
                 {job.salary && (
-                  <p className="text-sm text-emerald-700 font-medium mb-2">💰 {job.salary}</p>
+                  <p className="text-sm text-brand-600 font-medium mb-2">{job.salary}</p>
                 )}
                 {job.requiredSkills && (
-                  <p className="text-xs text-slate-400">Skills: {job.requiredSkills}</p>
+                  <p className="text-xs text-neutral-400">Skills: {job.requiredSkills}</p>
                 )}
               </div>
               <div className="grid grid-cols-3 sm:flex sm:flex-col gap-2 w-full sm:w-auto sm:min-w-fit">
                 <Link to={`/hr/jobs/${job.id}/edit`} className="text-xs btn-secondary py-1 px-3 text-center">Edit</Link>
                 <button onClick={() => toggleStatus(job)}
-                  className={`text-xs py-1 px-3 rounded-lg font-medium transition-colors
+                  className={`text-xs py-1.5 px-3 rounded-full font-medium transition-colors
                     ${job.status === 'OPEN'
                       ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
                       : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'}`}>

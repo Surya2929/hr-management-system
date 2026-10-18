@@ -38,11 +38,11 @@ export default function App() {
 
           {/* Unauthorized Fallback */}
           <Route path="/unauthorized" element={
-            <div className="min-h-screen flex items-center justify-center bg-slate-50">
-              <div className="text-center p-8 bg-white rounded-2xl shadow-md border border-slate-200 max-w-sm">
+            <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+              <div className="text-center p-8 bg-white rounded-2xl shadow-md border border-neutral-200 max-w-sm">
                 <h1 className="text-5xl font-bold text-red-500 mb-2">403</h1>
-                <p className="text-slate-800 font-semibold text-lg">Access Denied</p>
-                <p className="text-slate-500 text-sm mt-1">You do not have permission to view this section.</p>
+                <p className="text-neutral-800 font-semibold text-lg">Access Denied</p>
+                <p className="text-neutral-500 text-sm mt-1">You do not have permission to view this section.</p>
                 <a href="/login" className="btn-primary inline-block mt-5 text-xs">Back to Login</a>
               </div>
             </div>

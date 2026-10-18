@@ -81,7 +81,7 @@ export default function EmployeeForm() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-slate-800 mb-6">
+      <h2 className="text-3xl sm:text-4xl font-light text-neutral-900 mb-6">
         {isEdit ? 'Edit Employee' : 'Add New Employee'}
       </h2>
 
@@ -91,7 +91,7 @@ export default function EmployeeForm() {
             <>
               <Field label="Email"    id="email"    type="email"    value={form.email}    onChange={set('email')}    required />
               <Field label="Password" id="password" type="password" value={form.password} onChange={set('password')} required />
-              <p className="text-xs text-slate-400 -mt-2">At least 8 characters, including a number.</p>
+              <p className="text-xs text-neutral-400 -mt-2">At least 8 characters, including a number.</p>
             </>
           )}
 

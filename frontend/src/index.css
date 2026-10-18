@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Design: soft grey canvas, white rounded panels, pill-shaped controls,
+  thin large typography, black for primary actions, orange (brand) for highlights.
+*/
+
 @layer base {
   html {
     width: 100%;
@@ -10,7 +15,7 @@
   }
 
   body {
-    @apply bg-slate-100 text-slate-800 font-sans;
+    @apply bg-neutral-200 text-neutral-900 font-sans antialiased;
     width: 100%;
     max-width: 100%;
     min-width: 0;
@@ -32,45 +37,100 @@
   img, svg, video, canvas {
     max-width: 100%;
   }
+
+  /* Page titles: big and light, like the design's "40CN" numbers */
+  h2 {
+    @apply font-light tracking-tight;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-neutral-200;
+  }
 }
 
 @layer components {
+  /* Buttons are pills. Primary = black, like the design's filled circles */
   .btn-primary {
-    @apply bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
-  }
-  .btn-danger {
-    @apply bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer;
+    @apply inline-flex items-center justify-center gap-2 bg-neutral-900 hover:bg-black text-white font-medium px-5 py-2.5 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
   }
   .btn-secondary {
-    @apply bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer;
+    @apply inline-flex items-center justify-center gap-2 bg-white/70 hover:bg-white border border-neutral-300 text-neutral-800 font-medium px-5 py-2.5 rounded-full transition-colors cursor-pointer;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-5 py-2.5 rounded-full transition-colors cursor-pointer;
   }
   .btn-success {
-    @apply bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer;
+    @apply inline-flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-medium px-5 py-2.5 rounded-full transition-colors cursor-pointer;
   }
+
+  /* Round icon-only button (nav, toolbars) */
+  .icon-btn {
+    @apply inline-flex items-center justify-center w-10 h-10 rounded-full border border-neutral-300 bg-white/60 text-neutral-700 hover:bg-white hover:text-neutral-900 transition-colors;
+  }
+
+  /* Panels: white, very rounded, hairline border, no heavy shadow */
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5 md:p-6;
+    @apply bg-white rounded-3xl border border-white/80 shadow-[0_1px_2px_rgba(0,0,0,0.04)] p-5 sm:p-6;
     min-width: 0;
     max-width: 100%;
   }
+
   .input {
-    @apply w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white;
+    @apply w-full border border-neutral-300 rounded-2xl px-4 py-2.5 text-sm bg-white text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent;
     min-width: 0;
   }
-  .label {
-    @apply block text-sm font-medium text-slate-700 mb-1;
+  select.input {
+    @apply rounded-full pr-10;
   }
-  .badge-pending  { @apply px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700 inline-block; }
-  .badge-approved { @apply px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 inline-block; }
-  .badge-rejected { @apply px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 inline-block; }
-  .badge-open     { @apply px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 inline-block; }
-  .badge-closed   { @apply px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 inline-block; }
+
+  /* Small light grey labels, like "Depart By:" in the design */
+  .label {
+    @apply block text-sm font-normal text-neutral-500 mb-1.5;
+  }
+
+  /* Big light number + small caption (stat cards) */
+  .stat-value {
+    @apply text-4xl sm:text-5xl font-light tracking-tight text-neutral-900;
+  }
+  .stat-label {
+    @apply text-sm text-neutral-500;
+  }
+
+  /* Status badges: white pill with a coloured dot (design's "● BNPH" chips) */
+  .badge-pending, .badge-approved, .badge-rejected, .badge-open, .badge-closed {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border border-neutral-300 bg-white text-neutral-700 whitespace-nowrap;
+  }
+  .badge-pending::before, .badge-approved::before, .badge-rejected::before,
+  .badge-open::before, .badge-closed::before {
+    content: '';
+    @apply w-1.5 h-1.5 rounded-full shrink-0;
+  }
+  .badge-pending::before  { @apply bg-amber-500; }
+  .badge-approved::before { @apply bg-emerald-500; }
+  .badge-rejected::before { @apply bg-red-500; }
+  .badge-open::before     { @apply bg-brand-500; }
+  .badge-closed::before   { @apply bg-neutral-400; }
+
+  /* Tables: quiet headers and soft row dividers */
+  .card table thead tr {
+    @apply text-xs uppercase tracking-wide text-neutral-400 border-neutral-200;
+  }
+  .card table th {
+    @apply font-medium;
+  }
+
+  /* Decorative dotted grid (design's payload chart texture) */
+  .dot-grid {
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.18) 1px, transparent 1.2px);
+    background-size: 14px 14px;
+  }
 }
 
 /* Mobile safety rules for existing HR/employee pages */
 @media (max-width: 640px) {
   main h2 {
-    font-size: 1.35rem !important;
-    line-height: 1.75rem !important;
+    font-size: 1.75rem !important;
+    line-height: 2.1rem !important;
   }
 
   main .grid-cols-2 {

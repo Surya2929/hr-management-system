@@ -59,19 +59,19 @@ export default function MyAttendance() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-slate-800 mb-6">My Attendance</h2>
+      <h2 className="text-3xl sm:text-4xl font-light text-neutral-900 mb-6">My Attendance</h2>
 
       {/* Today: check-in / check-out status */}
       <div className="card mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="text-sm space-y-1">
-          <p className="font-semibold text-slate-700">
+          <p className="font-semibold text-neutral-700">
             Today{' '}
             {today?.late && <span className="badge-rejected ml-1">Late</span>}
           </p>
-          <p className="text-slate-500">
-            Check-in: <span className="font-medium text-slate-700">{today?.checkIn || '—'}</span>
+          <p className="text-neutral-500">
+            Check-in: <span className="font-medium text-neutral-700">{today?.checkIn || '—'}</span>
             {' · '}
-            Check-out: <span className="font-medium text-slate-700">{today?.checkOut || '—'}</span>
+            Check-out: <span className="font-medium text-neutral-700">{today?.checkOut || '—'}</span>
             {today?.workingHours != null && (
               <> · Worked: <span className="font-medium text-emerald-700">{today.workingHours} h</span></>
             )}
@@ -84,13 +84,13 @@ export default function MyAttendance() {
           className="btn-primary text-sm w-full sm:w-auto"
           title={canCheckOut ? '' : today?.checkOut ? 'Already checked out today' : 'Check in first'}
         >
-          {checkingOut ? 'Checking out…' : '⏏ Check Out'}
+          {checkingOut ? 'Checking out…' : 'Check Out'}
         </button>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="card">
-          <h3 className="font-semibold text-slate-700 mb-4">Mark Today's Attendance</h3>
+          <h3 className="font-semibold text-neutral-700 mb-4">Mark Today's Attendance</h3>
           <form onSubmit={handleMark} className="space-y-3">
             <div>
               <label className="label" htmlFor="attStatus">Status</label>
@@ -120,26 +120,26 @@ export default function MyAttendance() {
                 value={form.remarks} onChange={e => setForm(f => ({ ...f, remarks: e.target.value }))} />
             </div>
             <button type="submit" disabled={marking} className="btn-primary">
-              {marking ? 'Saving…' : '✓ Submit Attendance'}
+              {marking ? 'Saving…' : 'Submit Attendance'}
             </button>
           </form>
         </div>
 
         <div className="card">
-          <h3 className="font-semibold text-slate-700 mb-4">Attendance History</h3>
-          {loading ? <p className="text-slate-400">Loading…</p> : (
+          <h3 className="font-semibold text-neutral-700 mb-4">Attendance History</h3>
+          {loading ? <p className="text-neutral-400">Loading…</p> : (
             <div className="space-y-2 max-h-80 overflow-y-auto">
-              {history.length === 0 && <p className="text-slate-400 text-sm">No records yet</p>}
+              {history.length === 0 && <p className="text-neutral-400 text-sm">No records yet</p>}
               {history.map(r => (
                 <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 text-sm border-b pb-2">
-                  <span className="text-slate-600">{r.date}</span>
+                  <span className="text-neutral-600">{r.date}</span>
                   <span className="flex items-center gap-1.5">
                     {statusBadge(r.status)}
                     {r.late && <span className="badge-rejected">Late</span>}
                   </span>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-neutral-400">
                     {r.checkIn || '—'} → {r.checkOut || '—'}
-                    {r.workingHours != null && <span className="ml-1 font-medium text-slate-600">({r.workingHours} h)</span>}
+                    {r.workingHours != null && <span className="ml-1 font-medium text-neutral-600">({r.workingHours} h)</span>}
                   </span>
                 </div>
               ))}

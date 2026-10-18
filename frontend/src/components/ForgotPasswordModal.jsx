@@ -22,10 +22,10 @@ export default function ForgotPasswordModal({ onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full max-h-full overflow-y-auto p-6"
+    <div className="fixed inset-0 bg-neutral-900/50 flex items-center justify-center p-4 z-50" onClick={onClose}>
+      <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full max-h-full overflow-y-auto p-6"
         onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-bold text-slate-800 mb-3">🔑 Forgot Password</h3>
+        <h3 className="text-2xl font-light text-neutral-900 mb-3">Forgot Password</h3>
 
         {message ? (
           <>
@@ -34,7 +34,7 @@ export default function ForgotPasswordModal({ onClose }) {
           </>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <p className="text-sm text-slate-600">Enter your account email and we'll send you a reset link.</p>
+            <p className="text-sm text-neutral-600">Enter your account email and we'll send you a reset link.</p>
             <div>
               <label className="label" htmlFor="forgotEmail">Email Address</label>
               <input id="forgotEmail" type="email" className="input" required

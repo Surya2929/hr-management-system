@@ -31,15 +31,15 @@ export default function ResetPasswordModal({ token, onDone }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full max-h-full overflow-y-auto p-6">
-        <h3 className="text-lg font-bold text-slate-800 mb-3">🔒 Reset Password</h3>
+    <div className="fixed inset-0 bg-neutral-900/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full max-h-full overflow-y-auto p-6">
+        <h3 className="text-2xl font-light text-neutral-900 mb-3">Reset Password</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="label" htmlFor="resetPassword">New Password</label>
             <input id="resetPassword" type="password" className="input" autoComplete="new-password" required
               value={password} onChange={(e) => setPassword(e.target.value)} />
-            <p className="text-xs text-slate-400 mt-1">At least 8 characters, including a number.</p>
+            <p className="text-xs text-neutral-400 mt-1">At least 8 characters, including a number.</p>
           </div>
           <div>
             <label className="label" htmlFor="resetConfirm">Confirm New Password</label>

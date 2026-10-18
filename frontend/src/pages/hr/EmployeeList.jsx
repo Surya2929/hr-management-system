@@ -54,7 +54,7 @@ export default function EmployeeList() {
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <h2 className="text-2xl font-bold text-slate-800">Employees</h2>
+        <h2 className="text-3xl sm:text-4xl font-light text-neutral-900">Employees</h2>
         <Link to="/hr/employees/new" className="btn-primary text-sm text-center w-full sm:w-auto">+ Add Employee</Link>
       </div>
 
@@ -79,11 +79,11 @@ export default function EmployeeList() {
           </select>
         </div>
 
-        {loading ? <p className="text-slate-500">Loading…</p> : (
+        {loading ? <p className="text-neutral-500">Loading…</p> : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-slate-500 border-b">
+                <tr className="text-left text-neutral-500 border-b">
                   <th className="pb-2 pr-4">Name</th>
                   <th className="pb-2 pr-4">Email</th>
                   <th className="pb-2 pr-4">Designation</th>
@@ -91,18 +91,18 @@ export default function EmployeeList() {
                   <th className="pb-2">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-neutral-100">
                 {employees.length === 0 ? (
-                  <tr><td colSpan={5} className="py-8 text-center text-slate-400">No employees found</td></tr>
+                  <tr><td colSpan={5} className="py-8 text-center text-neutral-400">No employees found</td></tr>
                 ) : employees.map(emp => (
-                  <tr key={emp.id} className="hover:bg-slate-50">
+                  <tr key={emp.id} className="hover:bg-neutral-50">
                     <td className="py-3 pr-4 font-medium">{emp.firstName} {emp.lastName}</td>
-                    <td className="py-3 pr-4 text-slate-500">{emp.user?.email}</td>
+                    <td className="py-3 pr-4 text-neutral-500">{emp.user?.email}</td>
                     <td className="py-3 pr-4">{emp.designation || '—'}</td>
                     <td className="py-3 pr-4">{emp.department?.name || '—'}</td>
                     <td className="py-3 flex gap-2">
                       <Link to={`/hr/employees/${emp.id}/edit`}
-                        className="text-indigo-600 hover:underline text-xs">Edit</Link>
+                        className="text-brand-600 hover:underline text-xs">Edit</Link>
                       <button
                         onClick={() => handleDelete(emp.id, `${emp.firstName} ${emp.lastName}`)}
                         className="text-red-500 hover:underline text-xs">Delete</button>

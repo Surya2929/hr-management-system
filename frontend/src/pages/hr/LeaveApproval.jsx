@@ -41,24 +41,24 @@ export default function LeaveApproval() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-slate-800 mb-6">Leave Requests</h2>
+      <h2 className="text-3xl sm:text-4xl font-light text-neutral-900 mb-6">Leave Requests</h2>
 
       <div className="card">
         <div className="flex gap-3 mb-5">
           {['PENDING', 'ALL'].map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors
-                ${filter === f ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-              {f === 'PENDING' ? '⏳ Pending' : '📋 All'}
+                ${filter === f ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'}`}>
+              {f === 'PENDING' ? 'Pending' : 'All'}
             </button>
           ))}
         </div>
 
-        {loading ? <p className="text-slate-400">Loading…</p> : (
+        {loading ? <p className="text-neutral-400">Loading…</p> : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-slate-500 border-b">
+                <tr className="text-left text-neutral-500 border-b">
                   <th className="pb-2 pr-4">Employee</th>
                   <th className="pb-2 pr-4">Type</th>
                   <th className="pb-2 pr-4">From</th>
@@ -68,30 +68,30 @@ export default function LeaveApproval() {
                   <th className="pb-2">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-neutral-100">
                 {leaves.length === 0 ? (
-                  <tr><td colSpan={7} className="py-8 text-center text-slate-400">No leave requests</td></tr>
+                  <tr><td colSpan={7} className="py-8 text-center text-neutral-400">No leave requests</td></tr>
                 ) : leaves.map(l => (
-                  <tr key={l.id} className="hover:bg-slate-50">
+                  <tr key={l.id} className="hover:bg-neutral-50">
                     <td className="py-3 pr-4 font-medium">
                       {l.employee?.firstName} {l.employee?.lastName}
                     </td>
                     <td className="py-3 pr-4">{l.leaveType}</td>
                     <td className="py-3 pr-4">{l.fromDate}</td>
                     <td className="py-3 pr-4">{l.toDate}</td>
-                    <td className="py-3 pr-4 text-slate-500 max-w-xs truncate">{l.reason || '—'}</td>
+                    <td className="py-3 pr-4 text-neutral-500 max-w-xs truncate">{l.reason || '—'}</td>
                     <td className="py-3 pr-4">{badge(l.status)}</td>
                     <td className="py-3">
                       {l.status === 'PENDING' && (
                         <div className="flex gap-2">
                           <button onClick={() => approve(l.id)}
-                            className="text-xs btn-success py-1 px-2">✓ Approve</button>
+                            className="text-xs btn-success py-1.5 px-3">Approve</button>
                           <button onClick={() => reject(l.id)}
-                            className="text-xs btn-danger py-1 px-2">✗ Reject</button>
+                            className="text-xs btn-secondary py-1.5 px-3">Reject</button>
                         </div>
                       )}
                       {l.status !== 'PENDING' && (
-                        <span className="text-xs text-slate-400">{l.hrRemarks || '—'}</span>
+                        <span className="text-xs text-neutral-400">{l.hrRemarks || '—'}</span>
                       )}
                     </td>
                   </tr>

@@ -23,7 +23,7 @@ export default function AttendanceOverview() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-slate-800 mb-6">Attendance Overview</h2>
+      <h2 className="text-3xl sm:text-4xl font-light text-neutral-900 mb-6">Attendance Overview</h2>
 
       <div className="card">
         <div className="flex flex-wrap items-center gap-4 mb-5">
@@ -33,17 +33,17 @@ export default function AttendanceOverview() {
               value={date} onChange={e => setDate(e.target.value)} />
           </div>
           <div className="self-end">
-            <span className="text-sm text-slate-500">
+            <span className="text-sm text-neutral-500">
               {records.length} record{records.length !== 1 ? 's' : ''} found
             </span>
           </div>
         </div>
 
-        {loading ? <p className="text-slate-400">Loading…</p> : (
+        {loading ? <p className="text-neutral-400">Loading…</p> : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-slate-500 border-b">
+                <tr className="text-left text-neutral-500 border-b">
                   <th className="pb-2 pr-4">Employee</th>
                   <th className="pb-2 pr-4">Status</th>
                   <th className="pb-2 pr-4">Check In</th>
@@ -52,11 +52,11 @@ export default function AttendanceOverview() {
                   <th className="pb-2">Remarks</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-neutral-100">
                 {records.length === 0 ? (
-                  <tr><td colSpan={6} className="py-8 text-center text-slate-400">No attendance records for this date</td></tr>
+                  <tr><td colSpan={6} className="py-8 text-center text-neutral-400">No attendance records for this date</td></tr>
                 ) : records.map(r => (
-                  <tr key={r.id} className="hover:bg-slate-50">
+                  <tr key={r.id} className="hover:bg-neutral-50">
                     <td className="py-3 pr-4 font-medium">
                       {r.employee?.firstName} {r.employee?.lastName}
                     </td>
@@ -67,7 +67,7 @@ export default function AttendanceOverview() {
                     </td>
                     <td className="py-3 pr-4">{r.checkOut || '—'}</td>
                     <td className="py-3 pr-4">{r.workingHours != null ? `${r.workingHours} h` : '—'}</td>
-                    <td className="py-3 text-slate-500">{r.remarks || '—'}</td>
+                    <td className="py-3 text-neutral-500">{r.remarks || '—'}</td>
                   </tr>
                 ))}
               </tbody>

@@ -45,11 +45,11 @@ export default function DepartmentList() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-slate-800 mb-6">Departments</h2>
+      <h2 className="text-3xl sm:text-4xl font-light text-neutral-900 mb-6">Departments</h2>
 
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="card">
-          <h3 className="font-semibold text-slate-700 mb-4">
+          <h3 className="font-semibold text-neutral-700 mb-4">
             {editing ? 'Edit Department' : 'Add Department'}
           </h3>
           <form onSubmit={handleSave} className="space-y-3">
@@ -78,22 +78,22 @@ export default function DepartmentList() {
         </div>
 
         <div className="card">
-          <h3 className="font-semibold text-slate-700 mb-4">All Departments</h3>
-          {loading ? <p className="text-slate-400">Loading…</p> : (
-            <ul className="divide-y divide-slate-100">
+          <h3 className="font-semibold text-neutral-700 mb-4">All Departments</h3>
+          {loading ? <p className="text-neutral-400">Loading…</p> : (
+            <ul className="divide-y divide-neutral-100">
               {departments.map(d => (
                 <li key={d.id} className="py-3 flex justify-between items-center gap-3">
                   <div className="min-w-0">
                     <p className="font-medium text-sm break-words">{d.name}</p>
-                    <p className="text-xs text-slate-400 break-words">{d.description || '—'}</p>
+                    <p className="text-xs text-neutral-400 break-words">{d.description || '—'}</p>
                   </div>
                   <div className="flex gap-3 text-xs shrink-0">
-                    <button onClick={() => startEdit(d)} className="text-indigo-600 hover:underline">Edit</button>
+                    <button onClick={() => startEdit(d)} className="text-brand-600 hover:underline">Edit</button>
                     <button onClick={() => handleDelete(d.id, d.name)} className="text-red-500 hover:underline">Delete</button>
                   </div>
                 </li>
               ))}
-              {departments.length === 0 && <li className="text-slate-400 text-sm py-4">No departments yet</li>}
+              {departments.length === 0 && <li className="text-neutral-400 text-sm py-4">No departments yet</li>}
             </ul>
           )}
         </div>

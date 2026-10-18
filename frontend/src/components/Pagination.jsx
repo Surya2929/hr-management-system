@@ -13,7 +13,7 @@ export default function Pagination({ page, onChange }) {
       >
         ← Previous
       </button>
-      <span className="text-slate-500 text-center">
+      <span className="text-neutral-500 text-center">
         Page {current + 1} of {page.totalPages}
         <span className="hidden sm:inline"> · {page.totalElements} total</span>
       </span>

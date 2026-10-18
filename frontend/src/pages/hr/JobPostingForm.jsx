@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
+import { FiZap } from 'react-icons/fi';
 
 export default function JobPostingForm() {
   const { id }   = useParams();
@@ -72,7 +73,7 @@ export default function JobPostingForm() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-slate-800 mb-6">
+      <h2 className="text-3xl sm:text-4xl font-light text-neutral-900 mb-6">
         {isEdit ? 'Edit Job Posting' : 'New Job Posting'}
       </h2>
 
@@ -87,7 +88,7 @@ export default function JobPostingForm() {
             <label className="label" htmlFor="skills">Required Skills</label>
             <input id="skills" className="input" placeholder="Java, Spring Boot, MySQL…"
               value={form.requiredSkills} onChange={set('requiredSkills')} />
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-neutral-400 mt-1">
               Comma-separated. The AI screener uses this to score candidates.
             </p>
           </div>
@@ -99,9 +100,9 @@ export default function JobPostingForm() {
                 type="button"
                 onClick={handleGenerateWithAI}
                 disabled={aiLoading}
-                className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-xs font-semibold text-brand-600 hover:text-brand-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {aiLoading ? '✨ Generating…' : '✨ Generate with AI'}
+                <FiZap className="inline w-3.5 h-3.5 mr-1 -mt-0.5" aria-hidden="true" />{aiLoading ? 'Generating…' : 'Generate with AI'}
               </button>
             </div>
             <textarea id="jobDesc" rows={6} className="input resize-none"
