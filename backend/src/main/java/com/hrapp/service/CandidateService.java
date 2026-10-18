@@ -3,11 +3,15 @@ package com.hrapp.service;
 import com.hrapp.entity.Candidate;
 import com.hrapp.entity.Candidate.CandidateStatus;
 import com.hrapp.entity.JobPosting;
+import com.hrapp.exception.ResourceNotFoundException;
 import com.hrapp.repository.CandidateRepository;
 import com.hrapp.repository.JobPostingRepository;
 import com.hrapp.util.PdfTextExtractor;
+import com.hrapp.util.ResumeFileValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -61,9 +65,9 @@ public class CandidateService {
                                      String referredByEmail) throws IOException {
 
         JobPosting job = jobPostingRepository.findById(jobPostingId)
-                .orElseThrow(() -> new RuntimeException("Job posting not found: " + jobPostingId));
+                .orElseThrow(() -> new ResourceNotFoundException("Job posting not found: " + jobPostingId));
 
-        String savedFilePath = saveResumeToDisk(resumeFile, email);
+        String savedFilePath = saveResumeToDisk(resumeFile);
 
         String resumeText = "";
         try {
@@ -88,12 +92,14 @@ public class CandidateService {
 
     public List<Candidate> getCandidatesByJob(Long jobPostingId) {
         jobPostingRepository.findById(jobPostingId)
-                .orElseThrow(() -> new RuntimeException("Job posting not found: " + jobPostingId));
+                .orElseThrow(() -> new ResourceNotFoundException("Job posting not found: " + jobPostingId));
         return candidateRepository.findByJobPostingIdOrderByAiScoreDescAppliedAtAsc(jobPostingId);
     }
 
-    public List<Candidate> getAllCandidatesRanked() {
-        return candidateRepository.findAllByOrderByAiScoreDescAppliedAtAsc();
+    // Ranked list (best AI score first) with optional search / status / job filters, one page at a time
+    public Page<Candidate> searchCandidates(String search, CandidateStatus status, Long jobId, Pageable pageable) {
+        String term = (search == null || search.isBlank()) ? null : search.trim();
+        return candidateRepository.search(term, status, jobId, pageable);
     }
 
     public List<Candidate> getCandidatesByJobAndStatus(Long jobPostingId, CandidateStatus status) {
@@ -102,7 +108,7 @@ public class CandidateService {
 
     public Candidate getCandidateById(Long id) {
         return candidateRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Candidate not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Candidate not found: " + id));
     }
 
     @Transactional
@@ -122,21 +128,15 @@ public class CandidateService {
         return candidateRepository.save(candidate);
     }
 
-    private String saveResumeToDisk(MultipartFile file, String email) throws IOException {
-        if (file == null || file.isEmpty()) {
-            throw new RuntimeException("Resume file is required");
-        }
-
-        String originalFilename = file.getOriginalFilename();
-        if (originalFilename == null || !originalFilename.toLowerCase().endsWith(".pdf")) {
-            throw new RuntimeException("Only PDF files are accepted for resumes");
-        }
+    private String saveResumeToDisk(MultipartFile file) throws IOException {
+        // PDF only, max 5 MB, not empty (throws a clear 400 error otherwise)
+        ResumeFileValidator.validate(file);
 
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
         Files.createDirectories(uploadPath);
 
-        String uniqueFilename = UUID.randomUUID() + "_" +
-                email.replaceAll("[^a-zA-Z0-9]", "_") + ".pdf";
+        // Never use the user's file name - a random UUID name blocks path traversal (../../file)
+        String uniqueFilename = UUID.randomUUID() + ".pdf";
 
         Path targetPath = uploadPath.resolve(uniqueFilename);
         Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);

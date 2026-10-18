@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.*;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
@@ -17,6 +18,7 @@ import org.springframework.security.core.userdetails.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import com.hrapp.repository.UserRepository;
 
@@ -61,13 +63,19 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Allow browser preflight (OPTIONS) requests
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // Public auth endpoints: Login & Employee Registration
+                // Change password needs a logged-in user (must come before the permitAll below)
+                .requestMatchers("/api/auth/change-password").authenticated()
+                // Public auth endpoints: login, register, forgot/reset password
                 .requestMatchers("/api/auth/**").permitAll()
+                // Swagger UI and API docs
+                .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 // Allow reading departments during registration
                 .requestMatchers(HttpMethod.GET, "/api/departments").permitAll()
                 // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
+            // No / expired token -> 401 (frontend then sends the user back to login)
+            .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

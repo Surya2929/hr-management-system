@@ -48,20 +48,25 @@ export default function AttendanceOverview() {
                   <th className="pb-2 pr-4">Status</th>
                   <th className="pb-2 pr-4">Check In</th>
                   <th className="pb-2 pr-4">Check Out</th>
+                  <th className="pb-2 pr-4">Hours</th>
                   <th className="pb-2">Remarks</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {records.length === 0 ? (
-                  <tr><td colSpan={5} className="py-8 text-center text-slate-400">No attendance records for this date</td></tr>
+                  <tr><td colSpan={6} className="py-8 text-center text-slate-400">No attendance records for this date</td></tr>
                 ) : records.map(r => (
                   <tr key={r.id} className="hover:bg-slate-50">
                     <td className="py-3 pr-4 font-medium">
                       {r.employee?.firstName} {r.employee?.lastName}
                     </td>
                     <td className="py-3 pr-4">{statusBadge(r.status)}</td>
-                    <td className="py-3 pr-4">{r.checkIn || '—'}</td>
+                    <td className="py-3 pr-4 whitespace-nowrap">
+                      {r.checkIn || '—'}
+                      {r.late && <span className="badge-rejected ml-2">Late</span>}
+                    </td>
                     <td className="py-3 pr-4">{r.checkOut || '—'}</td>
+                    <td className="py-3 pr-4">{r.workingHours != null ? `${r.workingHours} h` : '—'}</td>
                     <td className="py-3 text-slate-500">{r.remarks || '—'}</td>
                   </tr>
                 ))}

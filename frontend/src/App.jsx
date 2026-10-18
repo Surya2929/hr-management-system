@@ -4,6 +4,7 @@ import { RoleRoute } from './components/ProtectedRoute';
 
 // Auth Page (Login & Employee Registration)
 import Login from './pages/Login';
+import ChangePassword from './pages/ChangePassword';
 
 // HR Pages
 import HrLayout           from './pages/hr/HrLayout';
@@ -65,6 +66,7 @@ export default function App() {
             <Route path="jobs/new"           element={<JobPostingForm />} />
             <Route path="jobs/:id/edit"      element={<JobPostingForm />} />
             <Route path="candidates"         element={<CandidateList />} />
+            <Route path="change-password"    element={<ChangePassword />} />
           </Route>
 
           {/* Employee Routes (Protected with Role 'EMPLOYEE') */}
@@ -78,6 +80,7 @@ export default function App() {
             <Route path="attendance" element={<MyAttendance />} />
             <Route path="leave"      element={<LeaveRequest />} />
             <Route path="jobs"       element={<OpenPositions />} />
+            <Route path="change-password" element={<ChangePassword />} />
           </Route>
 
           {/* Catch-all Route */}

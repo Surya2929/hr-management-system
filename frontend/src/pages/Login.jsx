@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../api/axiosInstance';
+import ForgotPasswordModal from '../components/ForgotPasswordModal';
+import ResetPasswordModal from '../components/ResetPasswordModal';
 
 export default function Login() {
   const [isRegister, setIsRegister] = useState(false);
@@ -32,6 +34,19 @@ export default function Login() {
   
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Reset link from "Forgot password" looks like /login?resetToken=...
+  const [searchParams, setSearchParams] = useSearchParams();
+  const resetToken = searchParams.get('resetToken');
+
+  const handleResetDone = (message) => {
+    setSearchParams({}); // remove the token from the URL
+    if (message) {
+      setIsRegister(false);
+      setError('');
+      setSuccess(message);
+    }
+  };
 
   // Load departments for registration dropdown
   useEffect(() => {
@@ -409,6 +424,7 @@ export default function Login() {
                       {showRegisterPassword ? '🙈' : '👁️'}
                     </button>
                   </div>
+                  <p className="text-xs text-slate-400 mt-1">At least 8 characters, including a number.</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -490,39 +506,11 @@ export default function Login() {
 
       </div>
 
-      {/* Forgot Password modal */}
-      {showForgotPassword && (
-        <div
-          className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50"
-          onClick={() => setShowForgotPassword(false)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
-              🔑 Reset Password
-            </h3>
-            <div className="space-y-3 text-sm text-slate-600">
-              <p>
-                <span className="font-semibold text-slate-800">Employees:</span>{' '}
-                Please contact your HR administrator to have your password reset.
-              </p>
-              <p>
-                <span className="font-semibold text-slate-800">HR / Admin:</span>{' '}
-                Please contact your system administrator to reset your credentials.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowForgotPassword(false)}
-              className="btn-primary w-full py-2.5 mt-5 text-sm"
-            >
-              Got it
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Forgot Password: enter email */}
+      {showForgotPassword && <ForgotPasswordModal onClose={() => setShowForgotPassword(false)} />}
+
+      {/* Reset Password: opened from the emailed/logged link */}
+      {resetToken && <ResetPasswordModal token={resetToken} onDone={handleResetDone} />}
     </div>
   );
 }

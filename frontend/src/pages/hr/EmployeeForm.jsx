@@ -91,6 +91,7 @@ export default function EmployeeForm() {
             <>
               <Field label="Email"    id="email"    type="email"    value={form.email}    onChange={set('email')}    required />
               <Field label="Password" id="password" type="password" value={form.password} onChange={set('password')} required />
+              <p className="text-xs text-slate-400 -mt-2">At least 8 characters, including a number.</p>
             </>
           )}
 

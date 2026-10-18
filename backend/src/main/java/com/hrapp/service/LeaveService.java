@@ -1,5 +1,6 @@
 package com.hrapp.service;
 
+import com.hrapp.exception.ResourceNotFoundException;
 import com.hrapp.entity.Employee;
 import com.hrapp.entity.LeaveRequest;
 import com.hrapp.entity.LeaveRequest.LeaveStatus;
@@ -28,7 +29,7 @@ public class LeaveService {
     @Transactional
     public LeaveRequest applyLeave(Long userId, Map<String, Object> body) {
         Employee employee = employeeRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Employee profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee profile not found"));
 
         LocalDate fromDate = LocalDate.parse(body.get("fromDate").toString());
         LocalDate toDate   = LocalDate.parse(body.get("toDate").toString());
@@ -63,13 +64,13 @@ public class LeaveService {
 
     public List<LeaveRequest> getMyLeaves(Long userId) {
         Employee employee = employeeRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Employee profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee profile not found"));
         return leaveRepository.findByEmployeeIdOrderByAppliedAtDesc(employee.getId());
     }
 
     public Map<String, Object> getLeaveBalance(Long userId) {
         Employee employee = employeeRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Employee profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee profile not found"));
 
         int currentYear = LocalDate.now().getYear();
         long daysUsed = leaveRepository.countApprovedDaysInYear(employee.getId(), currentYear);
@@ -120,12 +121,12 @@ public class LeaveService {
 
     public List<LeaveRequest> getLeavesForEmployee(Long employeeId) {
         employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found: " + employeeId));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + employeeId));
         return leaveRepository.findByEmployeeIdOrderByAppliedAtDesc(employeeId);
     }
 
     private LeaveRequest getLeaveById(Long id) {
         return leaveRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Leave request not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Leave request not found: " + id));
     }
 }

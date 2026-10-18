@@ -36,5 +36,12 @@ public class Attendance {
     @Column(length=255)
     private String remarks;
 
+    // Calculated by AttendanceService before sending - NOT saved in the database
+    @Transient
+    private Double workingHours; // checkOut - checkIn, e.g. 8.5
+
+    @Transient
+    private Boolean late;        // true if checkIn is after app.attendance.late-after
+
     public enum AttendanceStatus { PRESENT, ABSENT, HALF_DAY, ON_LEAVE }
 }

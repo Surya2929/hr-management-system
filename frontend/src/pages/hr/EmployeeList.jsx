@@ -1,26 +1,51 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
+import Pagination from '../../components/Pagination';
+import useDebounce from '../../hooks/useDebounce';
+
+const PAGE_SIZE = 10;
 
 export default function EmployeeList() {
   const [employees, setEmployees] = useState([]);
+  const [pageInfo, setPageInfo]   = useState(null); // Spring Page: number, totalPages, totalElements
   const [loading, setLoading]     = useState(true);
 
-  const fetchEmployees = () => {
-    setLoading(true);
-    axiosInstance.get('/employees')
-      .then(res => setEmployees(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  };
+  const [search, setSearch]           = useState('');
+  const [departmentId, setDepartmentId] = useState('');
+  const [page, setPage]               = useState(0);
+  const [departments, setDepartments] = useState([]);
+  const [reload, setReload]           = useState(0); // bump to refetch the current page
 
-  useEffect(() => { fetchEmployees(); }, []);
+  const debouncedSearch = useDebounce(search, 400); // wait 400 ms after typing stops
+
+  useEffect(() => {
+    axiosInstance.get('/departments').then(r => setDepartments(r.data)).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    let ignore = false; // drop the answer of an older request if a newer one was sent
+    setLoading(true);
+    axiosInstance.get('/employees', {
+      params: { search: debouncedSearch || undefined, departmentId: departmentId || undefined, page, size: PAGE_SIZE },
+    })
+      .then(res => {
+        if (ignore) return;
+        // Last row of the last page was deleted -> step back one page
+        if (res.data.content.length === 0 && page > 0) { setPage(page - 1); return; }
+        setEmployees(res.data.content);
+        setPageInfo(res.data);
+      })
+      .catch(console.error)
+      .finally(() => { if (!ignore) setLoading(false); });
+    return () => { ignore = true; };
+  }, [debouncedSearch, departmentId, page, reload]);
 
   const handleDelete = async (id, name) => {
     if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
     try {
       await axiosInstance.delete(`/employees/${id}`);
-      fetchEmployees();
+      setReload(r => r + 1);
     } catch (err) {
       alert(err.response?.data?.message || 'Delete failed');
     }
@@ -34,6 +59,26 @@ export default function EmployeeList() {
       </div>
 
       <div className="card">
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          <input
+            type="search"
+            className="input sm:flex-1"
+            placeholder="Search by name or designation…"
+            value={search}
+            onChange={e => { setSearch(e.target.value); setPage(0); }}
+            aria-label="Search employees"
+          />
+          <select
+            className="input sm:w-56"
+            value={departmentId}
+            onChange={e => { setDepartmentId(e.target.value); setPage(0); }}
+            aria-label="Filter by department"
+          >
+            <option value="">All departments</option>
+            {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+          </select>
+        </div>
+
         {loading ? <p className="text-slate-500">Loading…</p> : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -68,6 +113,7 @@ export default function EmployeeList() {
             </table>
           </div>
         )}
+        <Pagination page={pageInfo} onChange={setPage} />
       </div>
     </div>
   );

@@ -1,11 +1,15 @@
 package com.hrapp.service;
 
+import com.hrapp.exception.ResourceNotFoundException;
 import com.hrapp.entity.Department;
 import com.hrapp.entity.Employee;
 import com.hrapp.repository.DepartmentRepository;
 import com.hrapp.repository.EmployeeRepository;
+import com.hrapp.repository.PasswordResetTokenRepository;
 import com.hrapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,19 +25,22 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
+    private final PasswordResetTokenRepository resetTokenRepository;
 
-    public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
+    // Search by first name / last name / designation + optional department, one page at a time
+    public Page<Employee> searchEmployees(String search, Long departmentId, Pageable pageable) {
+        String term = (search == null || search.isBlank()) ? null : search.trim();
+        return employeeRepository.search(term, departmentId, pageable);
     }
 
     public Employee getEmployeeById(Long id) {
         return employeeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
     }
 
     public Employee getEmployeeByUserId(Long userId) {
         return employeeRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Employee profile not found for user: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee profile not found for user: " + userId));
     }
 
     @Transactional
@@ -61,7 +68,7 @@ public class EmployeeService {
         if (updates.containsKey("departmentId") && updates.get("departmentId") != null && !updates.get("departmentId").toString().isBlank()) {
             Long deptId = Long.parseLong(updates.get("departmentId").toString());
             Department dept = departmentRepository.findById(deptId)
-                    .orElseThrow(() -> new RuntimeException("Department not found: " + deptId));
+                    .orElseThrow(() -> new ResourceNotFoundException("Department not found: " + deptId));
             employee.setDepartment(dept);
         }
 
@@ -72,6 +79,7 @@ public class EmployeeService {
     public void deleteEmployee(Long id) {
         Employee employee = getEmployeeById(id);
         Long userId = employee.getUser().getId();
+        resetTokenRepository.deleteByUser(employee.getUser()); // remove any pending reset links first
         employeeRepository.deleteById(id);
         userRepository.deleteById(userId);
     }
@@ -80,7 +88,7 @@ public class EmployeeService {
     public Employee assignDepartment(Long employeeId, Long departmentId) {
         Employee employee = getEmployeeById(employeeId);
         Department department = departmentRepository.findById(departmentId)
-                .orElseThrow(() -> new RuntimeException("Department not found: " + departmentId));
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found: " + departmentId));
         employee.setDepartment(department);
         return employeeRepository.save(employee);
     }

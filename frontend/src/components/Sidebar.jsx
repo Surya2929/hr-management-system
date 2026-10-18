@@ -10,6 +10,7 @@ const hrLinks = [
   { to: '/hr/leave', label: '📅 Leave Requests' },
   { to: '/hr/jobs', label: '💼 Job Postings' },
   { to: '/hr/candidates', label: '🤖 Candidates (AI)' },
+  { to: '/hr/change-password', label: '🔑 Change Password' },
 ];
 
 const employeeLinks = [
@@ -17,6 +18,7 @@ const employeeLinks = [
   { to: '/emp/attendance', label: '📋 My Attendance' },
   { to: '/emp/leave', label: '📅 My Leaves' },
   { to: '/emp/jobs', label: '💼 Open Positions' },
+  { to: '/emp/change-password', label: '🔑 Change Password' },
 ];
 
 export default function Sidebar() {

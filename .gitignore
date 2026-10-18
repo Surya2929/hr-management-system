@@ -1,3 +1,7 @@
-backend/uploads/
+# Uploaded resumes are private - keep only the empty folder in git
+backend/uploads/*
+!backend/uploads/.gitkeep
+*.pdf
+
 backend.zip
 backend/target/

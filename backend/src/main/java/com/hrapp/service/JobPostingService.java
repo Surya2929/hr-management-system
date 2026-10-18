@@ -1,5 +1,6 @@
 package com.hrapp.service;
 
+import com.hrapp.exception.ResourceNotFoundException;
 import com.hrapp.entity.JobPosting;
 import com.hrapp.entity.JobPosting.JobStatus;
 import com.hrapp.entity.User;
@@ -29,13 +30,13 @@ public class JobPostingService {
 
     public JobPosting getJobById(Long id) {
         return jobPostingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Job posting not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Job posting not found: " + id));
     }
 
     @Transactional
     public JobPosting createJob(Map<String, Object> body, Long hrUserId) {
         User hrUser = userRepository.findById(hrUserId)
-                .orElseThrow(() -> new RuntimeException("HR user not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("HR user not found"));
 
         JobPosting job = JobPosting.builder()
                 .title(body.get("title").toString())

@@ -16,4 +16,6 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest,Long>
 
     @Query("SELECT COUNT(lr)>0 FROM LeaveRequest lr WHERE lr.employee.id=:eid AND lr.status<>'REJECTED' AND lr.fromDate<=:to AND lr.toDate>=:from")
     boolean existsOverlappingLeave(@Param("eid") Long eid, @Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    long countByStatus(LeaveStatus status);
 }

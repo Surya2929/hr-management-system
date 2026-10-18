@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
 import axiosInstance from '../../api/axiosInstance';
+import Pagination from '../../components/Pagination';
+import useDebounce from '../../hooks/useDebounce';
+
+const PAGE_SIZE = 10;
 
 export default function CandidateList() {
   const [jobs, setJobs]               = useState([]);
@@ -23,23 +27,45 @@ export default function CandidateList() {
   const [extracting, setExtracting] = useState(false);
   const [extractNote, setExtractNote] = useState('');
 
+  // Search, filters and paging (all handled by GET /candidates/ranked)
+  const [search, setSearch]             = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
+  const [page, setPage]                 = useState(0);
+  const [pageInfo, setPageInfo]         = useState(null);
+  const [reload, setReload]             = useState(0); // bump to refetch the current page
+  const debouncedSearch = useDebounce(search, 400);
+
   useEffect(() => {
     axiosInstance.get('/jobs').then(r => setJobs(r.data));
-    fetchCandidates('all');
   }, []);
 
-  const fetchCandidates = (jobId) => {
+  useEffect(() => {
+    let ignore = false; // drop the answer of an older request if a newer one was sent
     setLoading(true);
-    const url = jobId === 'all' ? '/candidates/ranked' : `/candidates/job/${jobId}`;
-    axiosInstance.get(url)
-      .then(r => setCandidates(r.data))
+    axiosInstance.get('/candidates/ranked', {
+      params: {
+        search: debouncedSearch || undefined,
+        status: selectedStatus || undefined,
+        jobId: selectedJob === 'all' ? undefined : selectedJob,
+        page,
+        size: PAGE_SIZE,
+      },
+    })
+      .then(r => {
+        if (ignore) return;
+        setCandidates(r.data.content);
+        setPageInfo(r.data);
+      })
       .catch(console.error)
-      .finally(() => setLoading(false));
-  };
+      .finally(() => { if (!ignore) setLoading(false); });
+    return () => { ignore = true; };
+  }, [debouncedSearch, selectedStatus, selectedJob, page, reload]);
+
+  const fetchCandidates = () => setReload(r => r + 1);
 
   const handleJobChange = (jobId) => {
     setSelectedJob(jobId);
-    fetchCandidates(jobId);
+    setPage(0);
   };
 
   const screenResume = async (candidateId) => {
@@ -138,7 +164,7 @@ export default function CandidateList() {
       setAddForm({ jobPostingId: '', fullName: '', email: '', phone: '', resume: null });
       setExtractNote('');
       setShowAddModal(false);
-      fetchCandidates(selectedJob);
+      fetchCandidates();
     } catch (err) {
       setAddError(err.response?.data?.message || 'Failed to add candidate. Ensure file is a valid PDF.');
     } finally {
@@ -180,23 +206,44 @@ export default function CandidateList() {
       </div>
 
       {/* Filter Bar */}
-      <div className="card mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <label className="label mb-0 whitespace-nowrap" htmlFor="jobFilter">Filter by Job:</label>
+      <div className="card mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <input
+            type="search"
+            className="input"
+            placeholder="Search name or email…"
+            value={search}
+            onChange={e => { setSearch(e.target.value); setPage(0); }}
+            aria-label="Search candidates"
+          />
           <select
             id="jobFilter"
-            className="input max-w-xs"
+            className="input"
             value={selectedJob}
             onChange={e => handleJobChange(e.target.value)}
+            aria-label="Filter by job"
           >
             <option value="all">All Jobs</option>
             {jobs.map(j => (
               <option key={j.id} value={j.id}>{j.title}</option>
             ))}
           </select>
+          <select
+            className="input"
+            value={selectedStatus}
+            onChange={e => { setSelectedStatus(e.target.value); setPage(0); }}
+            aria-label="Filter by status"
+          >
+            <option value="">All Statuses</option>
+            <option value="APPLIED">Applied</option>
+            <option value="SHORTLISTED">Shortlisted</option>
+            <option value="REJECTED">Rejected</option>
+            <option value="HIRED">Hired</option>
+          </select>
         </div>
-        <div className="text-xs text-slate-500">
-          Showing <span className="font-semibold text-slate-700">{candidates.length}</span> candidate(s)
+        <div className="text-xs text-slate-500 mt-3">
+          Showing <span className="font-semibold text-slate-700">{candidates.length}</span> of{' '}
+          <span className="font-semibold text-slate-700">{pageInfo?.totalElements ?? 0}</span> candidate(s)
         </div>
       </div>
 
@@ -350,6 +397,8 @@ export default function CandidateList() {
           ))}
         </div>
       )}
+
+      <Pagination page={pageInfo} onChange={setPage} />
 
       {/* ADD CANDIDATE MODAL */}
       {showAddModal && (

@@ -3,6 +3,7 @@ package com.hrapp.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hrapp.util.PdfTextExtractor;
+import com.hrapp.util.ResumeFileValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +25,7 @@ public class CandidateParsingService {
      * "Add Candidate" form so HR doesn't have to type these manually.
      */
     public Map<String, String> extractContactDetails(MultipartFile resumeFile) throws IOException {
+        ResumeFileValidator.validate(resumeFile); // same PDF / 5 MB rules as saving
         String resumeText = PdfTextExtractor.extractText(resumeFile);
         String truncated   = PdfTextExtractor.truncate(resumeText, 6000);
 

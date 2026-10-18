@@ -1,5 +1,6 @@
 package com.hrapp.service;
 
+import com.hrapp.exception.ResourceNotFoundException;
 import com.hrapp.entity.Department;
 import com.hrapp.repository.DepartmentRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class DepartmentService {
 
     public Department getDepartmentById(Long id) {
         return departmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Department not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found with id: " + id));
     }
 
     public Department createDepartment(Department department) {

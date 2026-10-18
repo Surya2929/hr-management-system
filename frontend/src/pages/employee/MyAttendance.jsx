@@ -6,13 +6,33 @@ export default function MyAttendance() {
   const [loading, setLoading] = useState(true);
   const [marking, setMarking] = useState(false);
   const [form, setForm]       = useState({ status: 'PRESENT', checkIn: '', checkOut: '', remarks: '' });
+  const [today, setToday]     = useState(null);   // today's record (null = not checked in)
+  const [checkingOut, setCheckingOut] = useState(false);
 
   const fetch = () => {
     axiosInstance.get('/attendance/me')
       .then(r => setHistory(r.data))
       .finally(() => setLoading(false));
+    axiosInstance.get('/attendance/me/today')
+      .then(r => setToday(r.data || null))
+      .catch(console.error);
   };
   useEffect(fetch, []);
+
+  const handleCheckOut = async () => {
+    setCheckingOut(true);
+    try {
+      await axiosInstance.post('/attendance/checkout');
+      fetch();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Check out failed');
+    } finally {
+      setCheckingOut(false);
+    }
+  };
+
+  // Check Out is allowed only after check-in and only once
+  const canCheckOut = Boolean(today?.checkIn) && !today?.checkOut;
 
   const handleMark = async (e) => {
     e.preventDefault();
@@ -40,6 +60,33 @@ export default function MyAttendance() {
   return (
     <div>
       <h2 className="text-2xl font-bold text-slate-800 mb-6">My Attendance</h2>
+
+      {/* Today: check-in / check-out status */}
+      <div className="card mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="text-sm space-y-1">
+          <p className="font-semibold text-slate-700">
+            Today{' '}
+            {today?.late && <span className="badge-rejected ml-1">Late</span>}
+          </p>
+          <p className="text-slate-500">
+            Check-in: <span className="font-medium text-slate-700">{today?.checkIn || '—'}</span>
+            {' · '}
+            Check-out: <span className="font-medium text-slate-700">{today?.checkOut || '—'}</span>
+            {today?.workingHours != null && (
+              <> · Worked: <span className="font-medium text-emerald-700">{today.workingHours} h</span></>
+            )}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={handleCheckOut}
+          disabled={!canCheckOut || checkingOut}
+          className="btn-primary text-sm w-full sm:w-auto"
+          title={canCheckOut ? '' : today?.checkOut ? 'Already checked out today' : 'Check in first'}
+        >
+          {checkingOut ? 'Checking out…' : '⏏ Check Out'}
+        </button>
+      </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="card">
@@ -86,8 +133,14 @@ export default function MyAttendance() {
               {history.map(r => (
                 <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 text-sm border-b pb-2">
                   <span className="text-slate-600">{r.date}</span>
-                  {statusBadge(r.status)}
-                  <span className="text-xs text-slate-400">{r.checkIn || '—'} → {r.checkOut || '—'}</span>
+                  <span className="flex items-center gap-1.5">
+                    {statusBadge(r.status)}
+                    {r.late && <span className="badge-rejected">Late</span>}
+                  </span>
+                  <span className="text-xs text-slate-400">
+                    {r.checkIn || '—'} → {r.checkOut || '—'}
+                    {r.workingHours != null && <span className="ml-1 font-medium text-slate-600">({r.workingHours} h)</span>}
+                  </span>
                 </div>
               ))}
             </div>
