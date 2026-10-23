@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,21 @@ public class LeaveService {
         LeaveType leaveType = LeaveType.valueOf(
                 body.getOrDefault("leaveType", "CASUAL").toString().toUpperCase());
 
+        // Enforce the yearly quota: approved + already pending + this request must fit in 24 days
+        if (leaveType != LeaveType.UNPAID) {
+            int year = fromDate.getYear();
+            long requested = daysBetween(fromDate, toDate);
+            long approved  = paidDaysInYear(employee.getId(), LeaveStatus.APPROVED, year);
+            long pending   = paidDaysInYear(employee.getId(), LeaveStatus.PENDING, year);
+            long available = TOTAL_ANNUAL_QUOTA - approved - pending;
+            if (requested > available) {
+                throw new IllegalArgumentException("Not enough leave balance for " + year + ": you asked for "
+                        + requested + " day(s) but only " + Math.max(0, available) + " are available"
+                        + (pending > 0 ? " (" + pending + " day(s) already pending approval)" : "")
+                        + ". Choose Unpaid Leave for extra days.");
+            }
+        }
+
         String reason = body.containsKey("reason") && body.get("reason") != null ? body.get("reason").toString() : null;
 
         LeaveRequest request = LeaveRequest.builder()
@@ -73,12 +89,14 @@ public class LeaveService {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee profile not found"));
 
         int currentYear = LocalDate.now().getYear();
-        long daysUsed = leaveRepository.countApprovedDaysInYear(employee.getId(), currentYear);
+        long daysUsed    = paidDaysInYear(employee.getId(), LeaveStatus.APPROVED, currentYear);
+        long daysPending = paidDaysInYear(employee.getId(), LeaveStatus.PENDING, currentYear);
 
         Map<String, Object> balance = new HashMap<>();
         balance.put("year", currentYear);
         balance.put("totalAllowed", TOTAL_ANNUAL_QUOTA);
         balance.put("daysUsed", daysUsed);
+        balance.put("daysPending", daysPending);
         balance.put("daysRemaining", Math.max(0, TOTAL_ANNUAL_QUOTA - daysUsed));
         return balance;
     }
@@ -97,6 +115,18 @@ public class LeaveService {
 
         if (leave.getStatus() != LeaveStatus.PENDING) {
             throw new RuntimeException("Only PENDING leaves can be approved. Current status: " + leave.getStatus());
+        }
+
+        // Re-check the quota at approval time, so HR can never approve past 24 paid days
+        if (leave.getLeaveType() != LeaveType.UNPAID) {
+            int year = leave.getFromDate().getYear();
+            long approved  = paidDaysInYear(leave.getEmployee().getId(), LeaveStatus.APPROVED, year);
+            long requested = daysBetween(leave.getFromDate(), leave.getToDate());
+            if (approved + requested > TOTAL_ANNUAL_QUOTA) {
+                throw new IllegalArgumentException("Cannot approve: the employee has only "
+                        + Math.max(0, TOTAL_ANNUAL_QUOTA - approved) + " paid leave day(s) left in " + year
+                        + " but this request is for " + requested + ". Reject it or ask for Unpaid Leave.");
+            }
         }
 
         leave.setStatus(LeaveStatus.APPROVED);
@@ -128,5 +158,20 @@ public class LeaveService {
     private LeaveRequest getLeaveById(Long id) {
         return leaveRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Leave request not found: " + id));
+    }
+
+    // Inclusive day count: 1st to 3rd = 3 days (same rule as the database query)
+    private long daysBetween(LocalDate from, LocalDate to) {
+        return ChronoUnit.DAYS.between(from, to) + 1;
+    }
+
+    // Total PAID leave days (UNPAID not counted) for one employee, status and year.
+    // A leave counts in the year it starts. An employee has only a few leaves a year, so summing in Java is cheap.
+    private long paidDaysInYear(Long employeeId, LeaveStatus status, int year) {
+        return leaveRepository.findByEmployeeIdAndStatusAndLeaveTypeNot(employeeId, status, LeaveType.UNPAID)
+                .stream()
+                .filter(l -> l.getFromDate().getYear() == year)
+                .mapToLong(l -> daysBetween(l.getFromDate(), l.getToDate()))
+                .sum();
     }
 }

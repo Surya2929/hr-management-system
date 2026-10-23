@@ -26,8 +26,6 @@ public class Candidate {
     @Column(length=20)
     private String phone;
 
-    @Column(name="resume_file_path", length=500)
-    private String resumeFilePath;
 
     @Column(name="resume_text", columnDefinition="MEDIUMTEXT")
     private String resumeText;

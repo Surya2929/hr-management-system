@@ -72,8 +72,10 @@ export default function LeaveRequest() {
         <div className="card mb-6 dot-grid">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h3 className="font-bold text-neutral-800">Annual Leave Quota ({balance.year})</h3>
-              <p className="text-xs text-neutral-500 mt-0.5">Track your available paid and casual leaves</p>
+              <h3 className="text-xl font-normal text-neutral-900">Annual Leave Quota ({balance.year})</h3>
+              <p className="text-xs text-neutral-500 mt-0.5">
+                Casual, sick and earned leave share {balance.totalAllowed} days a year. Unpaid leave has no limit.
+              </p>
             </div>
             <div className="flex flex-wrap items-center gap-4 sm:gap-6">
               <div className="text-center">
@@ -84,9 +86,17 @@ export default function LeaveRequest() {
                 <p className="text-xs text-neutral-400">Used</p>
                 <p className="text-xl font-bold text-yellow-600">{balance.daysUsed} days</p>
               </div>
+              {balance.daysPending > 0 && (
+                <div className="text-center">
+                  <p className="text-xs text-neutral-400">Pending</p>
+                  <p className="text-xl font-bold text-neutral-500">{balance.daysPending} days</p>
+                </div>
+              )}
               <div className="text-center">
-                <p className="text-xs text-neutral-400">Remaining</p>
-                <p className="text-xl font-bold text-emerald-600">{balance.daysRemaining} days</p>
+                <p className="text-xs text-neutral-400">Can still apply</p>
+                <p className="text-xl font-bold text-emerald-600">
+                  {Math.max(0, balance.daysRemaining - (balance.daysPending || 0))} days
+                </p>
               </div>
             </div>
           </div>
@@ -123,7 +133,7 @@ export default function LeaveRequest() {
                 <option value="CASUAL">Casual Leave</option>
                 <option value="SICK">Sick Leave</option>
                 <option value="EARNED">Earned Leave</option>
-                <option value="UNPAID">Unpaid Leave</option>
+                <option value="UNPAID">Unpaid Leave (no limit)</option>
               </select>
             </div>
 

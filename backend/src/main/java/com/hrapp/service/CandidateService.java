@@ -2,14 +2,15 @@ package com.hrapp.service;
 
 import com.hrapp.entity.Candidate;
 import com.hrapp.entity.Candidate.CandidateStatus;
+import com.hrapp.entity.CandidateResume;
 import com.hrapp.entity.JobPosting;
 import com.hrapp.exception.ResourceNotFoundException;
 import com.hrapp.repository.CandidateRepository;
+import com.hrapp.repository.CandidateResumeRepository;
 import com.hrapp.repository.JobPostingRepository;
 import com.hrapp.util.PdfTextExtractor;
 import com.hrapp.util.ResumeFileValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,12 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,9 +26,7 @@ public class CandidateService {
 
     private final CandidateRepository candidateRepository;
     private final JobPostingRepository jobPostingRepository;
-
-    @Value("${app.upload.dir}")
-    private String uploadDir;
+    private final CandidateResumeRepository resumeRepository;
 
     @Transactional
     public Candidate applyForJob(Long jobPostingId,
@@ -67,7 +61,8 @@ public class CandidateService {
         JobPosting job = jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job posting not found: " + jobPostingId));
 
-        String savedFilePath = saveResumeToDisk(resumeFile);
+        // PDF only, max 5 MB, not empty (throws a clear 400 error otherwise)
+        ResumeFileValidator.validate(resumeFile);
 
         String resumeText = "";
         try {
@@ -81,13 +76,32 @@ public class CandidateService {
                 .fullName(fullName)
                 .email(email)
                 .phone(phone)
-                .resumeFilePath(savedFilePath)
                 .resumeText(resumeText)
                 .status(CandidateStatus.APPLIED)
                 .referredByEmployee(referredByEmail)
                 .build();
 
-        return candidateRepository.save(candidate);
+        candidate = candidateRepository.save(candidate);
+
+        // Store the PDF itself in the database (Render's disk is wiped on restart).
+        // Same transaction: if this fails, the candidate is not saved either.
+        resumeRepository.save(CandidateResume.builder()
+                .candidate(candidate)
+                .contentType("application/pdf")
+                .sizeBytes(resumeFile.getSize())
+                .data(resumeFile.getBytes())
+                .build());
+
+        return candidate;
+    }
+
+    // The stored PDF, for HR's "View resume" button
+    @Transactional(readOnly = true)
+    public CandidateResume getResume(Long candidateId) {
+        getCandidateById(candidateId);
+        return resumeRepository.findByCandidateId(candidateId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Resume file is not available for this candidate (it was uploaded before resumes were stored in the database)"));
     }
 
     public List<Candidate> getCandidatesByJob(Long jobPostingId) {
@@ -121,26 +135,11 @@ public class CandidateService {
     @Transactional
     public void deleteCandidate(Long id) {
         getCandidateById(id);
+        resumeRepository.deleteByCandidateId(id); // PDF first (foreign key)
         candidateRepository.deleteById(id);
     }
 
     public Candidate save(Candidate candidate) {
         return candidateRepository.save(candidate);
-    }
-
-    private String saveResumeToDisk(MultipartFile file) throws IOException {
-        // PDF only, max 5 MB, not empty (throws a clear 400 error otherwise)
-        ResumeFileValidator.validate(file);
-
-        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-        Files.createDirectories(uploadPath);
-
-        // Never use the user's file name - a random UUID name blocks path traversal (../../file)
-        String uniqueFilename = UUID.randomUUID() + ".pdf";
-
-        Path targetPath = uploadPath.resolve(uniqueFilename);
-        Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-
-        return targetPath.toString();
     }
 }

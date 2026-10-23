@@ -4,6 +4,8 @@ import com.hrapp.exception.ResourceNotFoundException;
 import com.hrapp.entity.JobPosting;
 import com.hrapp.entity.JobPosting.JobStatus;
 import com.hrapp.entity.User;
+import com.hrapp.repository.CandidateRepository;
+import com.hrapp.repository.CandidateResumeRepository;
 import com.hrapp.repository.JobPostingRepository;
 import com.hrapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,8 @@ public class JobPostingService {
 
     private final JobPostingRepository jobPostingRepository;
     private final UserRepository userRepository;
+    private final CandidateRepository candidateRepository;
+    private final CandidateResumeRepository resumeRepository;
 
     public List<JobPosting> getOpenJobs() {
         return jobPostingRepository.findByStatusOrderByCreatedAtDesc(JobStatus.OPEN);
@@ -99,6 +103,9 @@ public class JobPostingService {
     @Transactional
     public void deleteJob(Long id) {
         getJobById(id);
+        // Children first (foreign keys): resume PDFs -> candidates -> the job itself
+        resumeRepository.deleteByJobPostingId(id);
+        candidateRepository.deleteByJobPostingId(id);
         jobPostingRepository.deleteById(id);
     }
 }

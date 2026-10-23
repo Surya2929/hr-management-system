@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 import Pagination from '../../components/Pagination';
 import useDebounce from '../../hooks/useDebounce';
-import { FiCpu, FiHelpCircle, FiLoader } from 'react-icons/fi';
+import { FiCpu, FiFileText, FiHelpCircle, FiLoader } from 'react-icons/fi';
 
 const PAGE_SIZE = 10;
 
@@ -91,6 +91,24 @@ export default function CandidateList() {
       alert(err.response?.data?.message || 'Question generation failed');
     } finally {
       setAiLoading(l => ({ ...l, [`q_${candidateId}`]: false }));
+    }
+  };
+
+  // Opens the stored resume PDF in a new tab. The API needs the JWT header,
+  // so we download it with axios and show it from a temporary blob URL.
+  const viewResume = async (candidateId) => {
+    const tab = window.open('', '_blank'); // open now (inside the click) so popup blockers allow it
+    try {
+      const res = await axiosInstance.get(`/candidates/${candidateId}/resume`, { responseType: 'blob' });
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      if (tab) tab.location.href = url; else window.location.href = url;
+      setTimeout(() => URL.revokeObjectURL(url), 60_000); // free memory after a minute
+    } catch (err) {
+      if (tab) tab.close();
+      // Error body is a Blob here, so read the JSON message out of it
+      let message = 'Could not open the resume';
+      try { message = JSON.parse(await err.response.data.text()).message || message; } catch { /* keep default */ }
+      alert(message);
     }
   };
 
@@ -328,7 +346,7 @@ export default function CandidateList() {
                 </div>
 
                 {/* Actions Panel */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:flex-col gap-2 lg:min-w-fit items-stretch pt-2 lg:pt-0 border-t lg:border-t-0 border-neutral-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-col gap-2 lg:min-w-fit items-stretch pt-2 lg:pt-0 border-t lg:border-t-0 border-neutral-100">
                   <button
                     onClick={() => screenResume(c.id)}
                     disabled={aiLoading[`screen_${c.id}`]}
@@ -357,6 +375,13 @@ export default function CandidateList() {
                     ) : (
                       <><FiHelpCircle className="w-4 h-4" aria-hidden="true" /> Interview Qs</>
                     )}
+                  </button>
+
+                  <button
+                    onClick={() => viewResume(c.id)}
+                    className="text-xs btn-secondary py-2 px-3 flex items-center justify-center gap-1.5"
+                  >
+                    <FiFileText className="w-4 h-4" aria-hidden="true" /> View Resume
                   </button>
 
                   <select

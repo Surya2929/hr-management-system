@@ -2,6 +2,7 @@ package com.hrapp.controller;
 
 import com.hrapp.entity.Candidate;
 import com.hrapp.entity.Candidate.CandidateStatus;
+import com.hrapp.entity.CandidateResume;
 import com.hrapp.entity.User;
 import com.hrapp.service.CandidateParsingService;
 import com.hrapp.service.CandidateService;
@@ -11,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -119,6 +122,18 @@ public class CandidateController {
     @PreAuthorize("hasRole('HR')")
     public ResponseEntity<Candidate> getCandidateById(@PathVariable Long id) {
         return ResponseEntity.ok(candidateService.getCandidateById(id));
+    }
+
+    @Operation(summary = "Download / view a candidate's resume PDF (HR)")
+    @GetMapping("/{id}/resume")
+    @PreAuthorize("hasRole('HR')")
+    public ResponseEntity<byte[]> getResume(@PathVariable Long id) {
+        CandidateResume resume = candidateService.getResume(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                // "inline" = open in the browser's PDF viewer. Fixed safe file name (no user input in headers).
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"resume-" + id + ".pdf\"")
+                .body(resume.getData());
     }
 
     @Operation(summary = "Change a candidate's status (HR)")
