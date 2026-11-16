@@ -13,7 +13,7 @@ export default function TempPasswordModal({ name, email, password, onClose }) {
     `Hi ${name}, your SmartHR account is ready.\n` +
     `Go to ${loginUrl} → "Activate Account"\n` +
     `Email: ${email}\nTemporary password: ${password}\n` +
-    `You will set your own password after verification.`;
+    `You will set your own password after verification. The temporary password expires in 7 days.`;
 
   const copy = async (text) => {
     try {
@@ -45,7 +45,7 @@ export default function TempPasswordModal({ name, email, password, onClose }) {
         </div>
 
         <p className="mt-4 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-2xl p-3">
-          This password will not be shown again. If it gets lost, use “New temp password” on the Employees page.
+          This password works for 7 days and will not be shown again. If it expires or gets lost, use “New temp password” on the Employees page.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-2 mt-5">

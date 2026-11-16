@@ -16,6 +16,8 @@ public interface CandidateRepository extends JpaRepository<Candidate,Long> {
     List<Candidate> findAllByOrderByAiScoreDescAppliedAtAsc();
     List<Candidate> findByJobPostingIdAndStatusOrderByAiScoreDesc(Long jobPostingId, CandidateStatus status);
     long countByJobPostingId(Long jobPostingId);
+    // Duplicate check: has this email already applied for this job?
+    boolean existsByJobPostingIdAndEmailIgnoreCase(Long jobPostingId, String email);
 
     // Ranked search: best AI score first. A null parameter means "no filter".
     @Query("SELECT c FROM Candidate c WHERE " +

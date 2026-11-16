@@ -1,5 +1,8 @@
 package com.hrapp.service;
 
+import com.hrapp.exception.AiServiceException;
+import lombok.extern.slf4j.Slf4j;
+import com.hrapp.exception.BadRequestException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hrapp.dto.InterviewQuestionsResponse;
@@ -9,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InterviewQuestionService {
@@ -24,7 +28,7 @@ public class InterviewQuestionService {
         Candidate candidate = candidateService.getCandidateById(candidateId);
 
         if (candidate.getResumeText() == null || candidate.getResumeText().isBlank()) {
-            throw new RuntimeException("Resume text is empty for candidate #" + candidateId + ". Cannot generate interview questions.");
+            throw new BadRequestException("Resume text is empty for candidate #" + candidateId + ". Cannot generate interview questions.");
         }
 
         String jobTitle   = candidate.getJobPosting().getTitle();
@@ -71,7 +75,7 @@ public class InterviewQuestionService {
             String questionsJson = objectMapper.writeValueAsString(parsed.getQuestions());
             candidate.setInterviewQuestions(questionsJson);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize interview questions");
+            throw new AiServiceException("Could not save the generated questions. Please try again.");
         }
 
         return candidateService.save(candidate);
@@ -87,7 +91,8 @@ public class InterviewQuestionService {
         try {
             return objectMapper.readValue(cleaned, InterviewQuestionsResponse.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to parse Groq JSON response: " + e.getMessage() + "\nRaw response: " + raw);
+            log.warn("Could not parse AI response: {} | raw: {}", e.getMessage(), raw); // details stay in the server log
+            throw new AiServiceException("The AI returned an unexpected answer. Please try again.");
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.hrapp.controller;
 
+import com.hrapp.exception.BadRequestException;
 import com.hrapp.entity.Candidate;
 import com.hrapp.entity.Candidate.CandidateStatus;
 import com.hrapp.entity.CandidateResume;
@@ -144,7 +145,7 @@ public class CandidateController {
             @RequestBody Map<String, String> body) {
         String status = body.get("status");
         if (status == null) {
-            throw new RuntimeException("Missing required field: status");
+            throw new BadRequestException("Missing required field: status");
         }
         return ResponseEntity.ok(candidateService.updateStatus(id, status));
     }

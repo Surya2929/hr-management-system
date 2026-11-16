@@ -3,5 +3,6 @@ backend/uploads/*
 !backend/uploads/.gitkeep
 *.pdf
 
-backend.zip
+# Zip backups (e.g. "backend (2).zip") must never be committed
+*.zip
 backend/target/

@@ -1,5 +1,6 @@
 package com.hrapp.service;
 
+import com.hrapp.exception.BadRequestException;
 import com.hrapp.config.JwtUtil;
 import com.hrapp.dto.LoginRequest;
 import com.hrapp.dto.LoginResponse;
@@ -48,6 +49,9 @@ public class AuthService {
 
         // A temporary password from HR cannot be used to log in - activate the account first
         if (Boolean.TRUE.equals(user.getMustChangePassword())) {
+            if (isTempPasswordExpired(user)) {
+                throw new BadRequestException("Your temporary password has expired. Ask HR for a new one.");
+            }
             throw new AccountNotActivatedException(
                     "Your account is not activated yet. Use 'Activate Account' to set your own password.");
         }
@@ -64,15 +68,17 @@ public class AuthService {
     @Transactional
     public LoginResponse completeActivation(String email, String temporaryPassword, String newPassword) {
         if (newPassword == null || newPassword.isBlank()) {
-            throw new IllegalArgumentException("New password is required");
+            throw new BadRequestException("New password is required");
         }
         User user = findUserForActivation(email, temporaryPassword);
         if (newPassword.equals(temporaryPassword)) {
-            throw new IllegalArgumentException("New password must be different from the temporary password");
+            throw new BadRequestException("New password must be different from the temporary password");
         }
 
         user.setPassword(passwordEncoder.encode(newPassword)); // BCrypt hash
         user.setMustChangePassword(false);                     // account is now active
+        user.setTempPasswordExpiresAt(null);                   // temp password is used up
+        user.setPasswordChangedAt(LocalDateTime.now());
         userRepository.save(user);
         return buildLoginResponse(user);
     }
@@ -81,12 +87,21 @@ public class AuthService {
     private User findUserForActivation(String email, String temporaryPassword) {
         User user = userRepository.findByEmail(email)
                 .filter(u -> passwordEncoder.matches(temporaryPassword, u.getPassword()))
-                .orElseThrow(() -> new IllegalArgumentException("Invalid email or temporary password"));
+                .orElseThrow(() -> new BadRequestException("Invalid email or temporary password"));
 
         if (!Boolean.TRUE.equals(user.getMustChangePassword())) {
-            throw new IllegalArgumentException("This account is already active. Please sign in.");
+            throw new BadRequestException("This account is already active. Please sign in.");
+        }
+        if (isTempPasswordExpired(user)) {
+            throw new BadRequestException("This temporary password has expired. Ask HR for a new one.");
         }
         return user;
+    }
+
+    // Temp passwords are valid for a few days only (set by EmployeeService when HR creates them)
+    private boolean isTempPasswordExpired(User user) {
+        return user.getTempPasswordExpiresAt() != null
+                && LocalDateTime.now().isAfter(user.getTempPasswordExpiresAt());
     }
 
     private LoginResponse buildLoginResponse(User user) {
@@ -98,25 +113,28 @@ public class AuthService {
                 .build();
     }
 
-    // Logged-in user changes their own password (old password must be correct)
+    // Logged-in user changes their own password (old password must be correct).
+    // Returns a NEW login token for this device; tokens on other devices stop working.
     @Transactional
-    public void changePassword(User currentUser, String oldPassword, String newPassword) {
+    public String changePassword(User currentUser, String oldPassword, String newPassword) {
         User user = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new BadCredentialsException("Invalid user"));
 
         // HR password is fixed by the server's HR_ADMIN_PASSWORD - change it there instead
         if (user.getRole() == User.Role.HR) {
-            throw new IllegalArgumentException("The HR password is managed on the server and cannot be changed here");
+            throw new BadRequestException("The HR password is managed on the server and cannot be changed here");
         }
 
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new IllegalArgumentException("Old password is incorrect");
+            throw new BadRequestException("Old password is incorrect");
         }
         if (passwordEncoder.matches(newPassword, user.getPassword())) {
-            throw new IllegalArgumentException("New password must be different from the old password");
+            throw new BadRequestException("New password must be different from the old password");
         }
         user.setPassword(passwordEncoder.encode(newPassword)); // BCrypt hash
+        user.setPasswordChangedAt(LocalDateTime.now());        // older tokens become invalid
         userRepository.save(user);
+        return jwtUtil.generateToken(user);
     }
 
     // Step 1 of forgot password: create a 30-minute token and print the link in the log.
@@ -145,16 +163,18 @@ public class AuthService {
     @Transactional
     public void resetPassword(String token, String newPassword) {
         PasswordResetToken resetToken = resetTokenRepository.findByToken(token)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired reset link"));
+                .orElseThrow(() -> new BadRequestException("Invalid or expired reset link"));
 
         if (resetToken.isExpired()) {
             resetTokenRepository.delete(resetToken);
-            throw new IllegalArgumentException("Invalid or expired reset link");
+            throw new BadRequestException("Invalid or expired reset link");
         }
 
         User user = resetToken.getUser();
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setMustChangePassword(false);
+        user.setTempPasswordExpiresAt(null);
+        user.setPasswordChangedAt(LocalDateTime.now()); // older tokens become invalid
         userRepository.save(user);
         resetTokenRepository.delete(resetToken); // token can be used only once
     }

@@ -258,7 +258,12 @@ export default function Login() {
       </div>
 
       {/* Forgot Password: enter email */}
-      {showForgotPassword && <ForgotPasswordModal onClose={() => setShowForgotPassword(false)} />}
+      {showForgotPassword && (
+        <ForgotPasswordModal
+          onClose={() => setShowForgotPassword(false)}
+          onActivate={() => { setShowForgotPassword(false); switchMode('activate'); }}
+        />
+      )}
 
       {/* Reset Password: opened from the emailed/logged link */}
       {resetToken && <ResetPasswordModal token={resetToken} onDone={handleResetDone} />}

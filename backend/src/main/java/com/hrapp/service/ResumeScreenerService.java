@@ -1,5 +1,9 @@
 package com.hrapp.service;
 
+import java.util.List;
+import com.hrapp.exception.AiServiceException;
+import lombok.extern.slf4j.Slf4j;
+import com.hrapp.exception.BadRequestException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hrapp.dto.ResumeScoreResponse;
@@ -9,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ResumeScreenerService {
@@ -24,7 +29,7 @@ public class ResumeScreenerService {
         Candidate candidate = candidateService.getCandidateById(candidateId);
 
         if (candidate.getResumeText() == null || candidate.getResumeText().isBlank()) {
-            throw new RuntimeException("Resume text is empty for candidate #" + candidateId + ". Cannot screen without resume text.");
+            throw new BadRequestException("Resume text is empty for candidate #" + candidateId + ". Cannot screen without resume text.");
         }
 
         String jobTitle       = candidate.getJobPosting().getTitle();
@@ -71,10 +76,13 @@ public class ResumeScreenerService {
         String rawResponse = groqApiService.chat(systemPrompt, userPrompt);
         ResumeScoreResponse parsed = parseJsonSafely(rawResponse, ResumeScoreResponse.class);
 
-        candidate.setAiScore(parsed.getScore());
-        candidate.setMatchingSkills(toJsonString(parsed.getMatchingSkills()));
-        candidate.setMissingSkills(toJsonString(parsed.getMissingSkills()));
-        candidate.setAiSummary(parsed.getSummary());
+        // Never trust the AI blindly: keep the score inside 0-100 and handle missing fields
+        int score = Math.max(0, Math.min(100, parsed.getScore()));
+        candidate.setAiScore(score);
+        candidate.setMatchingSkills(toJsonString(parsed.getMatchingSkills() != null ? parsed.getMatchingSkills() : List.of()));
+        candidate.setMissingSkills(toJsonString(parsed.getMissingSkills() != null ? parsed.getMissingSkills() : List.of()));
+        String summary = parsed.getSummary() == null ? "" : parsed.getSummary().trim();
+        candidate.setAiSummary(summary.length() > 2000 ? summary.substring(0, 2000) : summary);
 
         return candidateService.save(candidate);
     }
@@ -89,7 +97,8 @@ public class ResumeScreenerService {
         try {
             return objectMapper.readValue(cleaned, type);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to parse Groq JSON response: " + e.getMessage() + "\nRaw response: " + raw);
+            log.warn("Could not parse AI response: {} | raw: {}", e.getMessage(), raw); // details stay in the server log
+            throw new AiServiceException("The AI returned an unexpected answer. Please try again.");
         }
     }
 

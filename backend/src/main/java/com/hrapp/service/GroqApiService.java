@@ -1,5 +1,7 @@
 package com.hrapp.service;
 
+import com.hrapp.exception.AiServiceException;
+import lombok.extern.slf4j.Slf4j;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GroqApiService {
@@ -52,7 +55,8 @@ public class GroqApiService {
             JsonNode content = root.path("choices").get(0).path("message").path("content");
             return content.asText();
         } catch (Exception e) {
-            throw new RuntimeException("Groq API call failed: " + e.getMessage(), e);
+            log.error("Groq API call failed", e); // full details (status code, timeout...) only in the server log
+            throw new AiServiceException("The AI service is not responding right now. Please try again in a minute.");
         }
     }
 }

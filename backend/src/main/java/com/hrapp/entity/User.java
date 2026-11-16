@@ -33,6 +33,16 @@ public class User implements UserDetails {
     @Column(name="must_change_password")
     private Boolean mustChangePassword = false;
 
+    // The temporary password from HR stops working after this time (null = no temp password)
+    @Column(name="temp_password_expires_at")
+    private LocalDateTime tempPasswordExpiresAt;
+
+    // Last time the password changed. Login tokens issued BEFORE this are rejected,
+    // so changing the password logs out every other device.
+    @JsonIgnore
+    @Column(name="password_changed_at")
+    private LocalDateTime passwordChangedAt;
+
     @Builder.Default
     @Column(name="is_active")
     private Boolean isActive = true;

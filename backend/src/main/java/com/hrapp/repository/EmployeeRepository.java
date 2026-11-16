@@ -4,6 +4,7 @@ import com.hrapp.entity.Employee;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -28,4 +29,9 @@ public interface EmployeeRepository extends JpaRepository<Employee,Long> {
     @Query("SELECT COALESCE(d.name, 'Unassigned'), COUNT(e) FROM Employee e " +
            "LEFT JOIN e.department d GROUP BY d.name ORDER BY COUNT(e) DESC")
     List<Object[]> countByDepartment();
+
+    // Used before deleting a department: its employees become "no department"
+    @Modifying
+    @Query("UPDATE Employee e SET e.department = null WHERE e.department.id = :departmentId")
+    int clearDepartment(@Param("departmentId") Long departmentId);
 }

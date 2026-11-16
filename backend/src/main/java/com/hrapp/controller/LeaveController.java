@@ -33,6 +33,15 @@ public class LeaveController {
                 .body(leaveService.applyLeave(currentUser.getId(), body));
     }
 
+    @Operation(summary = "Cancel my own leave while it is still PENDING")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> cancelLeave(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long id) {
+        leaveService.cancelLeave(currentUser.getId(), id);
+        return ResponseEntity.ok(Map.of("message", "Leave request cancelled"));
+    }
+
     @Operation(summary = "My leave requests")
     @GetMapping("/my")
     public ResponseEntity<List<LeaveRequest>> getMyLeaves(@AuthenticationPrincipal User currentUser) {

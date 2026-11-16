@@ -31,7 +31,9 @@ export default function ChangePassword() {
         oldPassword: form.oldPassword,
         newPassword: form.newPassword,
       });
-      setSuccess(res.data.message);
+      // Old login tokens stop working after a password change, so keep the new one for this device
+      if (res.data.token) localStorage.setItem('token', res.data.token);
+      setSuccess(`${res.data.message}. You have been signed out on other devices.`);
       setForm({ oldPassword: '', newPassword: '', confirm: '' });
     } catch (err) {
       setError(err.response?.data?.message || 'Could not change password');

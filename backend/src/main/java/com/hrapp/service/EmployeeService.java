@@ -1,5 +1,7 @@
 package com.hrapp.service;
 
+import com.hrapp.util.InputCheck;
+import com.hrapp.exception.BadRequestException;
 import com.hrapp.exception.ResourceNotFoundException;
 import com.hrapp.entity.Department;
 import com.hrapp.entity.Employee;
@@ -16,12 +18,14 @@ import com.hrapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +38,10 @@ public class EmployeeService {
     private final DepartmentRepository departmentRepository;
     private final PasswordResetTokenRepository resetTokenRepository;
     private final PasswordEncoder passwordEncoder;
+
+    // How long a temporary password from HR works (application.properties, default 7 days)
+    @Value("${app.temp-password.valid-days:7}")
+    private int tempPasswordValidDays;
     private final AttendanceRepository attendanceRepository;
     private final LeaveRequestRepository leaveRequestRepository;
 
@@ -47,7 +55,7 @@ public class EmployeeService {
     @Transactional
     public CreateEmployeeResponse createEmployee(CreateEmployeeRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("An account with this email already exists");
+            throw new BadRequestException("An account with this email already exists");
         }
 
         String temporaryPassword = TempPasswordGenerator.generate();
@@ -58,6 +66,7 @@ public class EmployeeService {
                 .role(User.Role.EMPLOYEE)
                 .isActive(true)
                 .mustChangePassword(true) // employee must activate before the first login
+                .tempPasswordExpiresAt(LocalDateTime.now().plusDays(tempPasswordValidDays))
                 .build());
 
         Department department = null;
@@ -88,6 +97,8 @@ public class EmployeeService {
         String temporaryPassword = TempPasswordGenerator.generate();
         user.setPassword(passwordEncoder.encode(temporaryPassword));
         user.setMustChangePassword(true); // they must activate again with the new temp password
+        user.setTempPasswordExpiresAt(LocalDateTime.now().plusDays(tempPasswordValidDays));
+        user.setPasswordChangedAt(LocalDateTime.now()); // logs the employee out everywhere
         userRepository.save(user);
         return temporaryPassword;
     }
@@ -106,23 +117,34 @@ public class EmployeeService {
     public Employee updateEmployee(Long id, Map<String, Object> updates) {
         Employee employee = getEmployeeById(id);
 
+        // Each field is checked before saving: names cannot be blank, lengths match the DB columns
         if (updates.containsKey("firstName"))
-            employee.setFirstName((String) updates.get("firstName"));
+            employee.setFirstName(InputCheck.requiredText(updates.get("firstName"), "First name", 100));
 
         if (updates.containsKey("lastName"))
-            employee.setLastName((String) updates.get("lastName"));
+            employee.setLastName(InputCheck.requiredText(updates.get("lastName"), "Last name", 100));
 
         if (updates.containsKey("phone"))
-            employee.setPhone((String) updates.get("phone"));
+            employee.setPhone(InputCheck.optionalText(updates.get("phone"), "Phone", 20));
 
         if (updates.containsKey("designation"))
-            employee.setDesignation((String) updates.get("designation"));
+            employee.setDesignation(InputCheck.optionalText(updates.get("designation"), "Designation", 100));
 
-        if (updates.containsKey("salary") && updates.get("salary") != null && !updates.get("salary").toString().isBlank())
-            employee.setSalary(new BigDecimal(updates.get("salary").toString()));
+        if (updates.containsKey("salary") && updates.get("salary") != null && !updates.get("salary").toString().isBlank()) {
+            BigDecimal salary = new BigDecimal(updates.get("salary").toString()); // "abc" gives a 400 "Invalid value"
+            if (salary.signum() < 0) {
+                throw new BadRequestException("Salary cannot be negative");
+            }
+            employee.setSalary(salary);
+        }
 
-        if (updates.containsKey("dateJoined") && updates.get("dateJoined") != null && !updates.get("dateJoined").toString().isBlank())
-            employee.setDateJoined(LocalDate.parse(updates.get("dateJoined").toString()));
+        if (updates.containsKey("dateJoined") && updates.get("dateJoined") != null && !updates.get("dateJoined").toString().isBlank()) {
+            LocalDate joined = LocalDate.parse(updates.get("dateJoined").toString());
+            if (joined.isAfter(LocalDate.now())) {
+                throw new BadRequestException("Date joined cannot be in the future");
+            }
+            employee.setDateJoined(joined);
+        }
 
         if (updates.containsKey("departmentId") && updates.get("departmentId") != null && !updates.get("departmentId").toString().isBlank()) {
             Long deptId = Long.parseLong(updates.get("departmentId").toString());

@@ -117,7 +117,9 @@ This deletes their login, attendance and leave history. It cannot be undone.`)) 
                     <td className="py-3 pr-4 font-medium">
                       {emp.firstName} {emp.lastName}
                       {emp.user?.mustChangePassword && (
-                        <span className="badge-pending ml-2" title="Has not activated the account yet">Pending activation</span>
+                        new Date(emp.user.tempPasswordExpiresAt) < new Date()
+                          ? <span className="badge-rejected ml-2" title="Use New temp password to send a fresh one">Temp password expired</span>
+                          : <span className="badge-pending ml-2" title="Has not activated the account yet">Pending activation</span>
                       )}
                     </td>
                     <td className="py-3 pr-4 text-neutral-500">{emp.user?.email}</td>

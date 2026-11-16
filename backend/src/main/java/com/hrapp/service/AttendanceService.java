@@ -1,5 +1,6 @@
 package com.hrapp.service;
 
+import com.hrapp.exception.BadRequestException;
 import com.hrapp.exception.ResourceNotFoundException;
 import com.hrapp.entity.Attendance;
 import com.hrapp.entity.Employee;
@@ -27,13 +28,15 @@ public class AttendanceService {
     @Value("${app.attendance.late-after:09:30}")
     private String lateAfter;
 
+    // Employee check-in for today.
+    // The SERVER decides the time (now) and the status (PRESENT). "Late" is worked out
+    // from that time. Anything the browser sends for time or status is ignored, so it can't be faked.
     @Transactional
     public Attendance markAttendance(Long userId, Map<String, Object> body) {
         Employee employee = employeeRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee profile not found"));
 
         LocalDate today = LocalDate.now();
-
         Attendance attendance = attendanceRepository
                 .findByEmployeeIdAndDate(employee.getId(), today)
                 .orElse(Attendance.builder()
@@ -41,26 +44,23 @@ public class AttendanceService {
                         .date(today)
                         .build());
 
-        if (body.containsKey("status") && body.get("status") != null) {
-            attendance.setStatus(
-                    Attendance.AttendanceStatus.valueOf(
-                            body.get("status").toString().toUpperCase()));
-        } else if (attendance.getStatus() == null) {
-            attendance.setStatus(Attendance.AttendanceStatus.PRESENT);
+        if (attendance.getStatus() == Attendance.AttendanceStatus.ON_LEAVE) {
+            throw new BadRequestException("You are on approved leave today, so you cannot check in");
+        }
+        if (attendance.getCheckOut() != null) {
+            throw new BadRequestException("You have already checked out today");
+        }
+        if (attendance.getCheckIn() != null) {
+            throw new BadRequestException("You have already checked in today at " + attendance.getCheckIn());
         }
 
-        if (body.containsKey("checkIn") && body.get("checkIn") != null && !body.get("checkIn").toString().isBlank()) {
-            attendance.setCheckIn(LocalTime.parse(body.get("checkIn").toString()));
-        } else if (attendance.getCheckIn() == null) {
-            attendance.setCheckIn(LocalTime.now());
-        }
+        attendance.setCheckIn(LocalTime.now().withNano(0));       // server time, not the user's
+        attendance.setStatus(Attendance.AttendanceStatus.PRESENT); // server status, not the user's
 
-        if (body.containsKey("checkOut") && body.get("checkOut") != null && !body.get("checkOut").toString().isBlank()) {
-            attendance.setCheckOut(LocalTime.parse(body.get("checkOut").toString()));
-        }
-
-        if (body.containsKey("remarks")) {
-            attendance.setRemarks(body.get("remarks") != null ? body.get("remarks").toString() : null);
+        // Only the optional note comes from the employee
+        Object remarks = body.get("remarks");
+        if (remarks != null && !remarks.toString().isBlank()) {
+            attendance.setRemarks(remarks.toString().trim());
         }
 
         return addTimeInfo(attendanceRepository.save(attendance));
@@ -74,13 +74,13 @@ public class AttendanceService {
 
         Attendance attendance = attendanceRepository
                 .findByEmployeeIdAndDate(employee.getId(), LocalDate.now())
-                .orElseThrow(() -> new IllegalArgumentException("You have not checked in today"));
+                .orElseThrow(() -> new BadRequestException("You have not checked in today"));
 
         if (attendance.getCheckIn() == null) {
-            throw new IllegalArgumentException("You have not checked in today");
+            throw new BadRequestException("You have not checked in today");
         }
         if (attendance.getCheckOut() != null) {
-            throw new IllegalArgumentException("You have already checked out today");
+            throw new BadRequestException("You have already checked out today");
         }
 
         attendance.setCheckOut(LocalTime.now().withNano(0));

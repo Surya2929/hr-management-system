@@ -17,7 +17,7 @@ export default function EmployeeDashboard() {
 
   const markPresent = async () => {
     try {
-      const res = await axiosInstance.post('/attendance/mark', { status: 'PRESENT' });
+      const res = await axiosInstance.post('/attendance/mark', {}); // server sets time + status
       setToday(res.data);
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to mark attendance');

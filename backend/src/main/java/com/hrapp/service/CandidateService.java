@@ -4,6 +4,7 @@ import com.hrapp.entity.Candidate;
 import com.hrapp.entity.Candidate.CandidateStatus;
 import com.hrapp.entity.CandidateResume;
 import com.hrapp.entity.JobPosting;
+import com.hrapp.exception.BadRequestException;
 import com.hrapp.exception.ResourceNotFoundException;
 import com.hrapp.repository.CandidateRepository;
 import com.hrapp.repository.CandidateResumeRepository;
@@ -61,6 +62,17 @@ public class CandidateService {
         JobPosting job = jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job posting not found: " + jobPostingId));
 
+        // Fix: nobody (HR or employee referral) can add a candidate to a CLOSED job
+        if (job.getStatus() != JobPosting.JobStatus.OPEN) {
+            throw new BadRequestException("This job is closed and is not accepting applications");
+        }
+
+        // Fix: the same person (same email) can apply to the same job only once
+        String cleanEmail = email == null ? "" : email.trim();
+        if (candidateRepository.existsByJobPostingIdAndEmailIgnoreCase(jobPostingId, cleanEmail)) {
+            throw new BadRequestException(cleanEmail + " has already applied for this job");
+        }
+
         // PDF only, max 5 MB, not empty (throws a clear 400 error otherwise)
         ResumeFileValidator.validate(resumeFile);
 
@@ -74,7 +86,7 @@ public class CandidateService {
         Candidate candidate = Candidate.builder()
                 .jobPosting(job)
                 .fullName(fullName)
-                .email(email)
+                .email(cleanEmail)
                 .phone(phone)
                 .resumeText(resumeText)
                 .status(CandidateStatus.APPLIED)

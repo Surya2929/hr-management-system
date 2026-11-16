@@ -58,6 +58,17 @@ export default function LeaveRequest() {
     }
   };
 
+  // Employee withdraws a PENDING request (the days go back to the balance)
+  const handleCancel = async (id) => {
+    if (!confirm('Cancel this leave request?')) return;
+    try {
+      await axiosInstance.delete(`/leave/${id}`);
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Could not cancel the leave request');
+    }
+  };
+
   const statusBadge = (s) => {
     if (s === 'APPROVED') return <span className="badge-approved">APPROVED</span>;
     if (s === 'REJECTED') return <span className="badge-rejected">REJECTED</span>;
@@ -74,7 +85,7 @@ export default function LeaveRequest() {
             <div>
               <h3 className="text-xl font-normal text-neutral-900">Annual Leave Quota ({balance.year})</h3>
               <p className="text-xs text-neutral-500 mt-0.5">
-                Casual, sick and earned leave share {balance.totalAllowed} days a year. Unpaid leave has no limit.
+                Casual, sick and earned leave share {balance.totalAllowed} working days a year (weekends are not counted). Unpaid leave has no limit.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-4 sm:gap-6">
@@ -222,6 +233,15 @@ export default function LeaveRequest() {
                       <p className="text-xs text-brand-600 bg-brand-50/70 p-1.5 rounded mt-1">
                         <span className="font-medium">HR Remarks:</span> {item.hrRemarks}
                       </p>
+                    )}
+                    {item.status === 'PENDING' && (
+                      <button
+                        type="button"
+                        onClick={() => handleCancel(item.id)}
+                        className="text-xs text-red-600 hover:underline"
+                      >
+                        Cancel request
+                      </button>
                     )}
                   </div>
                 ))

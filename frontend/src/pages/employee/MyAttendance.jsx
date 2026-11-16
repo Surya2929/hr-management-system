@@ -5,7 +5,7 @@ export default function MyAttendance() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [marking, setMarking] = useState(false);
-  const [form, setForm]       = useState({ status: 'PRESENT', checkIn: '', checkOut: '', remarks: '' });
+  const [remarks, setRemarks] = useState(''); // optional note; time and status are set by the server
   const [today, setToday]     = useState(null);   // today's record (null = not checked in)
   const [checkingOut, setCheckingOut] = useState(false);
 
@@ -34,17 +34,18 @@ export default function MyAttendance() {
   // Check Out is allowed only after check-in and only once
   const canCheckOut = Boolean(today?.checkIn) && !today?.checkOut;
 
+  // Check-in is allowed once a day, and not on an approved leave day
+  const onLeaveToday = today?.status === 'ON_LEAVE';
+  const canCheckIn = !today?.checkIn && !onLeaveToday;
+
   const handleMark = async (e) => {
     e.preventDefault();
     setMarking(true);
     try {
-      const body = { status: form.status };
-      if (form.checkIn)  body.checkIn  = form.checkIn + ':00';
-      if (form.checkOut) body.checkOut = form.checkOut + ':00';
-      if (form.remarks)  body.remarks  = form.remarks;
-      await axiosInstance.post('/attendance/mark', body);
+      // Only the note is sent - the server records the current time and status
+      await axiosInstance.post('/attendance/mark', remarks ? { remarks } : {});
       fetch();
-      setForm({ status: 'PRESENT', checkIn: '', checkOut: '', remarks: '' });
+      setRemarks('');
     } catch (err) {
       alert(err.response?.data?.message || 'Failed');
     } finally {
@@ -90,39 +91,30 @@ export default function MyAttendance() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="card">
-          <h3 className="font-semibold text-neutral-700 mb-4">Mark Today's Attendance</h3>
-          <form onSubmit={handleMark} className="space-y-3">
-            <div>
-              <label className="label" htmlFor="attStatus">Status</label>
-              <select id="attStatus" className="input"
-                value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
-                <option value="PRESENT">Present</option>
-                <option value="ABSENT">Absent</option>
-                <option value="HALF_DAY">Half Day</option>
-                <option value="ON_LEAVE">On Leave</option>
-              </select>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+          <h3 className="font-semibold text-neutral-700 mb-1">Check In</h3>
+          <p className="text-xs text-neutral-500 mb-4">
+            The current time is recorded automatically. Checking in after the office start time is marked Late.
+          </p>
+          {onLeaveToday ? (
+            <p className="text-sm text-neutral-600 bg-neutral-50 border border-neutral-200 rounded-2xl p-3">
+              You are on approved leave today.
+            </p>
+          ) : today?.checkIn ? (
+            <p className="text-sm text-neutral-600 bg-neutral-50 border border-neutral-200 rounded-2xl p-3">
+              You checked in today at <b>{today.checkIn}</b>.
+            </p>
+          ) : (
+            <form onSubmit={handleMark} className="space-y-3">
               <div>
-                <label className="label" htmlFor="checkIn">Check In</label>
-                <input id="checkIn" type="time" className="input"
-                  value={form.checkIn} onChange={e => setForm(f => ({ ...f, checkIn: e.target.value }))} />
+                <label className="label" htmlFor="attRemarks">Remarks (optional)</label>
+                <input id="attRemarks" className="input" placeholder="e.g. Working from home" maxLength={255}
+                  value={remarks} onChange={e => setRemarks(e.target.value)} />
               </div>
-              <div>
-                <label className="label" htmlFor="checkOut">Check Out</label>
-                <input id="checkOut" type="time" className="input"
-                  value={form.checkOut} onChange={e => setForm(f => ({ ...f, checkOut: e.target.value }))} />
-              </div>
-            </div>
-            <div>
-              <label className="label" htmlFor="attRemarks">Remarks (optional)</label>
-              <input id="attRemarks" className="input" placeholder="e.g. Working from home"
-                value={form.remarks} onChange={e => setForm(f => ({ ...f, remarks: e.target.value }))} />
-            </div>
-            <button type="submit" disabled={marking} className="btn-primary">
-              {marking ? 'Saving…' : 'Submit Attendance'}
-            </button>
-          </form>
+              <button type="submit" disabled={marking || !canCheckIn} className="btn-primary">
+                {marking ? 'Saving…' : 'Check In Now'}
+              </button>
+            </form>
+          )}
         </div>
 
         <div className="card">

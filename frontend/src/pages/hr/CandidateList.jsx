@@ -458,7 +458,7 @@ export default function CandidateList() {
                   required
                 >
                   <option value="">— Select Job Role —</option>
-                  {jobs.map(j => (
+                  {jobs.filter(j => j.status === 'OPEN').map(j => ( // closed jobs cannot take new candidates
                     <option key={j.id} value={j.id}>{j.title} ({j.location || 'Remote'})</option>
                   ))}
                 </select>

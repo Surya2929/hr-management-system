@@ -7,6 +7,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Function;
 
@@ -32,6 +34,15 @@ public class JwtUtil {
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    // True if the token was created before the password was last changed (so it must be rejected).
+    // Compared in whole seconds because the token's "issued at" time has no milliseconds.
+    public boolean isIssuedBefore(String token, LocalDateTime passwordChangedAt) {
+        if (passwordChangedAt == null) return false;
+        Date issuedAt = extractClaim(token, Claims::getIssuedAt);
+        long changedAtSeconds = passwordChangedAt.atZone(ZoneId.systemDefault()).toEpochSecond();
+        return issuedAt.toInstant().getEpochSecond() < changedAtSeconds;
     }
 
     public boolean validateToken(String token, UserDetails user) {

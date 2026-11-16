@@ -1,6 +1,6 @@
 package com.hrapp.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -36,9 +36,8 @@ public class JobPosting {
     @Builder.Default
     private JobStatus status = JobStatus.OPEN;
 
-    @JsonIgnoreProperties({"password","role","isActive","createdAt","authorities",
-        "accountNonExpired","accountNonLocked","credentialsNonExpired","enabled",
-        "hibernateLazyInitializer","handler"})
+    // Never sent in JSON: the job list is also shown to employees and would leak the HR email
+    @JsonIgnore
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="created_by")
     private User createdBy;

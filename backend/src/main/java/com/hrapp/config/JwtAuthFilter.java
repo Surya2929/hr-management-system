@@ -1,5 +1,6 @@
 package com.hrapp.config;
 
+import com.hrapp.entity.User;
 import com.hrapp.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -36,7 +37,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 UserDetails user = userRepository.findByEmail(email)
                         .orElseThrow(() -> new RuntimeException("User not found"));
                 // isEnabled(): a disabled account's old token stops working immediately
-                if (user.isEnabled() && jwtUtil.validateToken(jwt, user)) {
+                // Also reject tokens created before the last password change (logged out everywhere)
+                boolean oldToken = user instanceof User u && jwtUtil.isIssuedBefore(jwt, u.getPasswordChangedAt());
+                if (user.isEnabled() && !oldToken && jwtUtil.validateToken(jwt, user)) {
                     var auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
                     SecurityContextHolder.getContext().setAuthentication(auth);

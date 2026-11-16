@@ -88,7 +88,11 @@ public class DataInitializer {
             if (hr == null) {
                 hr = User.builder().email(hrEmail).role(User.Role.HR).build();
             }
-            hr.setPassword(passwordEncoder.encode(hrPassword)); // env value is the source of truth
+            // env value is the source of truth. Only when it really changed do we log HR out everywhere.
+            if (hr.getPassword() == null || !passwordEncoder.matches(hrPassword, hr.getPassword())) {
+                hr.setPassword(passwordEncoder.encode(hrPassword));
+                hr.setPasswordChangedAt(java.time.LocalDateTime.now());
+            }
             hr.setIsActive(true);
             hr.setMustChangePassword(false);
             userRepository.save(hr);

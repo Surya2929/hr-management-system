@@ -1,5 +1,6 @@
 package com.hrapp.service;
 
+import com.hrapp.exception.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +12,7 @@ public class JobDescriptionService {
 
     public String generateDescription(String title, String skills) {
         if (title == null || title.isBlank()) {
-            throw new RuntimeException("Job title is required to generate a description.");
+            throw new BadRequestException("Job title is required to generate a description.");
         }
 
         String systemPrompt = """

@@ -1,5 +1,6 @@
 package com.hrapp.service;
 
+import com.hrapp.util.InputCheck;
 import com.hrapp.exception.ResourceNotFoundException;
 import com.hrapp.entity.JobPosting;
 import com.hrapp.entity.JobPosting.JobStatus;
@@ -42,12 +43,14 @@ public class JobPostingService {
         User hrUser = userRepository.findById(hrUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("HR user not found"));
 
+        // Title is required (a missing title used to crash with a NullPointerException);
+        // lengths match the DB columns
         JobPosting job = JobPosting.builder()
-                .title(body.get("title").toString())
-                .description(body.containsKey("description") && body.get("description") != null ? body.get("description").toString() : null)
-                .requiredSkills(body.containsKey("requiredSkills") && body.get("requiredSkills") != null ? body.get("requiredSkills").toString() : null)
-                .location(body.containsKey("location") && body.get("location") != null ? body.get("location").toString() : null)
-                .salary(body.containsKey("salary") && body.get("salary") != null ? body.get("salary").toString() : null)
+                .title(InputCheck.requiredText(body.get("title"), "Job title", 200))
+                .description(InputCheck.optionalText(body.get("description"), "Description", 10_000))
+                .requiredSkills(InputCheck.optionalText(body.get("requiredSkills"), "Required skills", 2_000))
+                .location(InputCheck.optionalText(body.get("location"), "Location", 100))
+                .salary(InputCheck.optionalText(body.get("salary"), "Salary", 100))
                 .employmentType(body.containsKey("employmentType") && body.get("employmentType") != null
                         ? JobPosting.EmploymentType.valueOf(body.get("employmentType").toString().toUpperCase())
                         : JobPosting.EmploymentType.FULL_TIME)
@@ -62,20 +65,20 @@ public class JobPostingService {
     public JobPosting updateJob(Long id, Map<String, Object> body) {
         JobPosting job = getJobById(id);
 
-        if (body.containsKey("title") && body.get("title") != null)
-            job.setTitle(body.get("title").toString());
+        if (body.containsKey("title"))
+            job.setTitle(InputCheck.requiredText(body.get("title"), "Job title", 200));
 
         if (body.containsKey("description"))
-            job.setDescription(body.get("description") != null ? body.get("description").toString() : null);
+            job.setDescription(InputCheck.optionalText(body.get("description"), "Description", 10_000));
 
         if (body.containsKey("requiredSkills"))
-            job.setRequiredSkills(body.get("requiredSkills") != null ? body.get("requiredSkills").toString() : null);
+            job.setRequiredSkills(InputCheck.optionalText(body.get("requiredSkills"), "Required skills", 2_000));
 
         if (body.containsKey("location"))
-            job.setLocation(body.get("location") != null ? body.get("location").toString() : null);
+            job.setLocation(InputCheck.optionalText(body.get("location"), "Location", 100));
 
         if (body.containsKey("salary"))
-            job.setSalary(body.get("salary") != null ? body.get("salary").toString() : null);
+            job.setSalary(InputCheck.optionalText(body.get("salary"), "Salary", 100));
 
         if (body.containsKey("employmentType") && body.get("employmentType") != null)
             job.setEmploymentType(JobPosting.EmploymentType.valueOf(body.get("employmentType").toString().toUpperCase()));
